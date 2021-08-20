@@ -1,11 +1,8 @@
-import block
-import users
-
-# Can you write class Transaction
 class Transaction:
 	def __init__(self, sender, recipient, amount):
-		pass
+		self.sender = sender
+		self.recipient = recipient
+		self.amount = amount
 
-
-def create_transaction(self): #this is important
-	pass
+def create_transaction(self, sender, recipient, amount): 
+	return Transaction(sender, recipient, amount)
