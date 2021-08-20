@@ -1,0 +1,113 @@
+<html>
+    <head>
+        <title>GriffinCoin</title>
+         
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+        <!--Let browser know website is optimized for mobile-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+        <style>
+            .dim{
+                opacity:0.60; filter: alpha(opacity=60);
+            }
+
+            .dimBack{
+                background: #000;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- nav -->
+        <nav class="sticky-top navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
+              <a class="navbar-brand mr-3" href="javascript:jump('banner')">
+                <img src="https://hackerspace.govhack.org/assets/logo-footer-91aec9295ddf37950968f2a51d0dbcfdbcf479920bd4d6d04d368c531143ef2e.svg" alt="logo" height="60">
+              </a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <li class="nav-item">
+                    <a id='h0' class="nav-link active" aria-current="page" href="javascript:jump('banner')">Home</a>
+                  </li>
+                  <li class="nav-item">
+                    <a id='h1' class="nav-link" href="javascript:jump('about')">About</a>
+                  </li>
+                </ul>
+                <button class="btn btn-sm btn-dark">Login</button>
+              </div>
+            </div>
+        </nav>
+        <!-- banner -->
+        <div id="banner">
+            <div class="w-100 dimBack">
+                <img src="https://wallpaperaccess.com/full/3648367.jpg" class="img-fluid dim" alt="banner">
+            </div>
+            <div class="container">
+                <div class="carousel-caption d-flex justify-content-center" style="top:0">
+                    <h1 style="font-size: 3rem;position:absolute;top:30%">GriffinCoin</h1> 
+                </div>
+                <div class="carousel-caption d-flex justify-content-center" style="top:0">
+                    <!-- subtitle if you wish to add (you can comment if it's not required) -->
+                    <p style="color:#9e9e9e;font-size:1.25rem;position:absolute;top:33.5%">Subitle</p>  <!-- no clue what it would be? --> <!-- ah idk i'm too tired -->
+                </div>
+                <div class="carousel-caption d-flex justify-content-center" style="top:0">
+                    <p style="color:#ffffff;font-size: 1rem;position:absolute;top:40%">
+                        A blockchain ensuring the safety of Superannuation investments for Australian Citizens
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- about -->
+        <div id="about" class="mt-5 container">
+            <h2>About GriffinCoin</h2>
+            <hr>
+            <p>
+                One line short desc. One line short desc.
+                One line short desc. One line short desc.
+            </p>
+            <!-- Area for responsive animation (perhaps) -->
+            <div style="height:450px">
+            </div>
+            <p>
+                Further desc. Further desc. Further desc. Further desc. Further desc. Further desc.
+                Further desc. Further desc. Further desc. Further desc. Further desc. Further desc.
+                Further desc. Further desc. Further desc. Further desc. Further desc. Further desc.
+                Further desc. Further desc. Further desc. Further desc. Further desc. Further desc.
+                Further desc. Further desc. Further desc. Further desc. Further desc. Further desc.
+            </p>
+        </div>
+
+        <script>
+            var curActiveHeader = '#h0';
+            var headers = ['banner','about'];
+
+            //smooth scroll
+            function jump(id)
+            {
+                $('html, body').animate({
+                    scrollTop: $("#"+id).offset().top
+                }, 1000);
+            }
+
+            //automatically change the colour for the options in nav
+            $(window).scroll(function(){
+                var scrollTop= document.documentElement.scrollTop || document.body.scrollTop;
+                for(var i =0;i<headers.length;i++){
+                    var element = headers[i];
+                    var pos1 = $("#"+element).offset().top;
+                    var con2 = parseInt(pos1) - parseInt(scrollTop);
+                    if(con2>0&&con2<450){
+                        $(curActiveHeader).removeClass('active');
+                        curActiveHeader = '#h'+ headers.indexOf(element);
+                        $('#h'+ headers.indexOf(element)).addClass('active');
+                    }
+                }
+            });
+        </script>
+    </body>
