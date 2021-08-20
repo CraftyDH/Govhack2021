@@ -1,6 +1,9 @@
-import hashlib
-import block
-CONST_USER_JSON = "/json/user.json"
+import sys
+sys.path.insert(1, "../dependencies")
+from hashlib import *
+import block, base58, json, transaction
+
+CONST_USER_JSON = "/server/json/user.json"
 
 """
 account {
@@ -12,8 +15,6 @@ account {
 }
 """
 
-from pysondb import db
-
 class User(object):
     username: str
     password: str
@@ -21,72 +22,88 @@ class User(object):
         self.username = username
         self.password = password
         self.private_key = private_key
-        self.local_ledger = local_ledger # Make this a struct its fine
+        self.local_ledger = local_ledger 
 
-    # @staticmethod
-    # def create_user(username: str, password: str) -> User:
-    #     return User(username, password, "private_key", "public_key")
-    
-    def check_password(self, password) -> bool:
-        return self.password == password
-    
-    def set_password(self, password) -> self:
-        self.password = password
-        return self
-        ## Update JSON
-        
-    def set_username(self, username) -> None:
-        self.username = username
-        ## Update JSON
+def append_json(user_data, fp):
+    with open(fp, "r+") as f:
+        data = json.load(f)
+        data.append(user_data)
+        f.seek(0)
+        json.dump(data, f)
 
-# class User:
-#     def __init__(self, file_path):
-#         self.db = db.getDb(file_path)
-    
-#     def create_user(self, username: str, password: str, public_key, private_key, local_ledger=None): #use None for ledger
-#         self.db.add({"username": username, "password": password, })
-        
-#     def get_user(self, username):
-#         return self.db.getBy({"username": username})
+def modify_json(new_data, fp):
+    with open(fp, "r+") as f:
+        f.seek(0)
+        json.dump(new_data)
 
-#     def check_password(self, username, password):
-#         user = self.get_user(username)
-#         return user.password == password
+# Functions for modifiying the Json file
 
-#     def update_user(self, username):
-        
-
-def create_user(username: str, password: str) -> User: #return boolean true for correctly made user and false for incorrectly made user
+def create_user(username: str, password: str): 
     private_key = sha256(base58.b58encode(str(username).encode())).hexdigest()
     public_key = str(sha256(sha256(private_key.encode()).hexdigest().encode()).hexdigest())
-    #public_key_hash = str(sha256(public_key.encode()).hexdigest()) # Daniel can you pip hashlib
+    # check to see if username is not inside the database
+    users = json.load(CONST_USER_JSON)
+    for user in users:
+        if (user["username"] == username):
+            return False
+        if ("old_username" in user):
+            if (user["old_username"] == username):
+                return False
+    #
+    append_json(User(username, password, public_key, private_key).__dict__, CONST_USER_JSON)
     return User(username, password, public_key, private_key)
 
 def get_user(username: str): 
-    json.loads(CONST_USER_JSON)
-    return User(username, password, public_key, private_key, local_ledger)
-
-def save_user(user):
-    # Save user stuff
-    pass
+    users = json.load(CONST_USER_JSON)
+    for user in users:
+        if (user["username"] == username):
+            return User(username, user["password"], user["public_key"], user["private_key"], user["local_ledger"])
+    return None
 
 def modify_username(username: str, password: str, new_username: str) -> bool:
-    user = get_user(username, password)
-    user.username = new_username
-    save_user(user)
-    return True
+    users = json.load(CONST_USER_JSON)
+    for user in range(len(users)):
+        if (users[user]["username"] == username) and (users[user]["password"] == password):
+            users[user]["username"] = new_username
+            users[user]["old_username"] = username
+            modify_json(users, CONST_USER_JSON)
+            return True
+    return False # User doesn't exist
 
-def modify_password(username: str, old_pass: str, new_pass: str) -> bool:
-    user = get_user(username, old_pass)
-    user.password = new_pass
-    save_user(user)
+def modify_password(username: str, password: str, new_password: str) -> bool:
+    users = json.load(CONST_USER_JSON)
+    for user in range(len(users)):
+        if (users[user]["username"] == username) and (users[user]["password"] == password):
+            users[user]["password"] = new_password
+            modify_json(users, CONST_USER_JSON)
+            return True
+    return False # User doesn't exist
 
-def delete_user(username: str) -> bool:
-    pass
+def delete_user(username: str, password : str) -> bool:
+    users = json.load(CONST_USER_JSON)
+    for user in range(len(users)):
+        if (users[user]["username"] == username) and (users[user]["password"] == password):
+            del users[user]
+            modify_json(users, CONST_USER_JSON)
+            return True
 
-def login(username: str, password: str) -> User: # -> User: #this is the same prcoess as get_user?
-    pass
+def add_to_local_ledger(username: str, transact: transaction) -> bool: # Adding local transactions to the local ledger
+    users = json.load(CONST_USER_JSON)
+    for user in range(len(users)):
+        if (users[user]["username"] == username):
+            users[user]["local_ledger"].append(transact)
+            modify_json(users, CONST_USER_JSON)
+            return True
+    return False
+
+# Handling Login's and Transactions
+
+def login(username: str, password: str) -> User: # -> User: # this is the same process as get_user?
+    users = json.load(CONST_USER_JSON)
+    for user in users:
+        if (user["username"] == username) and (user["password"] == password):
+            return True
+    return False # User doesn't exist
     
-def add_to_local_ledger(username: str) -> bool: # Adding local transactions to the local ledger
-    pass
+
 

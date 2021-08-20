@@ -20,7 +20,7 @@ async def chain(request):
 @routes.get('/block/{index}')
 async def block(request):
     index = request.match_info("index")
-    block = block.get_block(index)
+    block = block.get_block(index) # ??
     ret_json = json.dumps(block.__dict__)
     return web.Response(text=ret_json)
 
@@ -62,7 +62,7 @@ async def create_account(request):
 async def delete_account(request):
     data = request.post()
     deleted = users.delete_user(data["username"], data["password"])
-    ret_json = json.dumps(deleted) #might be unecersarry, although it's probably safer (deleted output is boolean)
+    ret_json = json.dumps(deleted) #might be unnecessary, although it's probably safer (deleted output is boolean)
     return web.Response(text=ret_json)
 
 @routes.post('/create_transaction')
