@@ -1,7 +1,7 @@
 from aiohttp import web
 import json
 
-import block
+import block as b
 import users
 import transaction
 
@@ -13,21 +13,21 @@ routes = web.RouteTableDef()
 
 @routes.get('/chain')
 async def chain(request):
-    bc = block.blockchain
+    bc = b.blockchain
     ret_json = json.dumps(bc.__dict__)
     return web.Response(text=ret_json)
 
 @routes.get('/block/{index}')
 async def block(request):
     index = request.match_info("index")
-    block = block.get_block(index) # ??
+    block = b.get_block(index) # ??
     ret_json = json.dumps(block.__dict__)
     return web.Response(text=ret_json)
 
 @routes.get('/mine')
 async def mine(request):
-    block.mine()
-    ret_json = json.dumps(block.__dict__)
+    b.mine()
+    ret_json = json.dumps(b.__dict__)
     return web.Response(text=ret_json)
 
 @routes.post('/account')
