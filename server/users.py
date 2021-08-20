@@ -14,6 +14,7 @@ account {
     local_ledger varchar(1000), --chain
 }
 """
+# Miscellaneous 
 
 class User(object):
     username: str
@@ -36,7 +37,7 @@ def modify_json(new_data, fp):
         f.seek(0)
         json.dump(new_data)
 
-# Functions for modifiying the Json file
+# Functions for retrieving User data and inserting User data.
 
 def create_user(username: str, password: str): 
     private_key = sha256(base58.b58encode(str(username).encode())).hexdigest()
@@ -59,6 +60,8 @@ def get_user(username: str):
         if (user["username"] == username):
             return User(username, user["password"], user["public_key"], user["private_key"], user["local_ledger"])
     return None
+
+# Modifying the JSON database
 
 def modify_username(username: str, password: str, new_username: str) -> bool:
     users = json.load(CONST_USER_JSON)
