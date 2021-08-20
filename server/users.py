@@ -89,6 +89,7 @@ def delete_user(username: str, password : str) -> bool:
             del users[user]
             modify_json(users, CONST_USER_JSON)
             return True
+    return False
 
 def add_to_local_ledger(username: str, transact: transaction) -> bool: # Adding local transactions to the local ledger
     users = json.load(CONST_USER_JSON)
