@@ -4,7 +4,7 @@ import random
 import time # Look at the bottom of your file please @Jamie
 import itertools
 from hashlib import sha256
-import safe_json
+from typing import Container
 
 CONST_TRANSACTS_IN_BLOCK_NUM = 10
 
@@ -12,7 +12,7 @@ class Block:
 	def __init__(self, index, transactions, timestamp, previous_hash, nonce=0):
 		# values needed for blockheader
 			self.index = index
-			self.transactions = transactions #when used in chainlist it stores contracts not transactions
+			self.transactions = transactions #when used in chainlist it stores contracts not transactions (load json recursive)
 			self.timestamp = timestamp
 			self.previous_hash = previous_hash
 			self.nonce = nonce
@@ -32,8 +32,8 @@ class Block:
 
 class ChainList:
 	def __init__(self, block, next=None):
-		self.block = block
-		self.next = next
+		self.block = block #load json recursive here
+		self.next = next #load json recursive here
 	def iterator(self): #returns iterator for iterating over chain list, use with for loop to iterate over blockchain (this is very ugly but I don't care)
 		if self.next == None: return [self.block]
 		return [self.block] + self.next.iterator()
@@ -86,6 +86,18 @@ class Blockchain:
 		self.create_genisis()
 		self.tax_rate = .05
 		self.unsigned_contracts = []
+		
+	@staticmethod
+	def load_json(self, json_in):
+		b = Blockchain()
+		# b.unconfirmed_transactions = [transaction.Transaction.load_json(n) for n in json_in["unconfirmed_transactions"]]
+		# b.unconfirmed_contracts = [transaction.Smart_Contract.load_json(n) for n in json_in["unconfirmed_contracts"]
+		# b.chain = json_in["chain"] #load json recursive here
+ 		# b.contracts_chain = json_in["contracts_chain"] #load json recursive here
+		# b.difficulty = json_in["difficulty"]
+		# b.tax_rate = json_in["tax_rate"]
+		# b.unsigned_contracts = json_in["unsigned_contracts"] #load json recursive here
+		# return b
 
 	def add_SC(self, SC):
 		self.unsigned_contracts.append(SC)
@@ -201,25 +213,19 @@ class Blockchain:
 
 	def add_transaction(self, trans):
 		self.unconfirmed_transactions.append(trans)
+		return
 
-	# smart contract format -> { publickey : amount_contributed }
-	# senders -> {"node1":25, "node2":30}
-	# recipients -> {"node3":55}
-	def get_user_worth(self, user : dict) -> float:
-		return sum([transaction.amount for block in blockchain.chain for transaction in block.transactions if (transaction.sender == user) or (transaction.recipient == user)])
-	
-	def get_user_transactions(self, user : dict):
-		return [transaction.amount for block in blockchain.chain for transaction in block.transactions if (transaction.sender == user) or (transaction.recipient == user)]
+	def add_contract(self, contract):
+		self.unconfirmed_contracts.append(contract)
+		self.mine_contracts()
+		return {"status": "Contract mining called"}
 
-	def get_all_contracts(self):
-		return [contract for block in blockchain.contracts_chain for contract in block.transactions]
+blockchain = Blockchain() #! POTENTIAL ERROR WITH EMPTY FILE. CHECK LATer
 
-blockchain = Blockchain()
+# BLOCK_JSON_FILE = "../json/block.json"
+# def store_chain():
+# 	safe_dump(blockchain, BLOCK_JSON_FILE)
 
-"""
-BLOCK_JSON_FILE = "../json/block.json"
-def store_chain():
-	safe_dump(blockchain, BLOCK_JSON_FILE)
-def load_chain():
-	json_in = 
-"""
+# def load_chain():
+# 	json_in = json.loads(open(BLOCK_JSON_FILE, "r").read())
+# 	return Blockchain.load_json(json_in)

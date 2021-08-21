@@ -63,6 +63,7 @@ async def mine(request):
 async def account(request):
     data = await request.post()
     user = users.login(data["username"], data["password"])
+    # user.balance = b.get_user_worth(data["username"])
     return web.json_response(user)
 
 @routes.post('/modify_password')
@@ -95,8 +96,6 @@ async def create_transaction(request):
         trans = t.create_transaction_no_validation(data["sender_private_key"], data["recipient_public_key"], data["amount"])
     else: # If data['amount'] == null/None 
         trans = t.create_transaction_no_validation(data["sender_private_key"], data["recipient_public_key"], 0)
-    #if trans["status"] != "success": # If the transaction class returns an error
-    #return web.json_response(trans)
     b.mine_transactions() # running here
     ret_json = safe_str({"status": "success", "transaction": trans})
     return web.Response(text=ret_json, content_type="application/json")
@@ -155,28 +154,27 @@ async def get_usernames(request):
     ret_json = safe_str({"status": "success", "usernames": usernames})
     return web.Response(text=ret_json, content_type="application/json")
 
-# @routes.post("/create_smart_contract")
-# async def post_smart_contract(request):
-#     data = await request.post()["parameters"]
-#     if t.create_contract(data): # THIS WON'T WORK IF JAMIE DOESN'T RETURN A BOOl
-#         return {"status": "success"}
-#     return {'status': "failed creating contract"}
+@routes.post("/create_smart_contract")
+async def post_smart_contract(request):
+    data = await request.post()["parameters"]
+    if t.create_contract(data): # THIS WON'T WORK IF JAMIE DOESN'T RETURN A BOOl
+        return {"status": "success"}
+    return {'status': "failed creating contract"}
 
-# @routes.post('/get_all_contracts')
-# async def get_all_contracts(request): # add error checking
-#     contracts = b.get_all_contracts()
-#     if contracts:
-#         ret_json = safe_str({"status": "success", "contracts": contracts})
-#         return web.Response(text=ret_json, content_type="application/json")
-#     return web.Response(text={
-#         "status": "failed getting contracts"
-#     })
+@routes.post('/get_all_contracts')
+async def get_all_contracts(request): # add error checking
+    contracts = b.get_all_contracts()
+    if contracts:
+        ret_json = safe_str({"status": "success", "contracts": contracts})
+        return web.Response(text=ret_json, content_type="application/json")
+    return web.Response(text={
+        "status": "failed getting contracts"
+    })
 
-# @routes.post('/sign_contract')
-# async def sign_transaction(request):
-#     data = await request.post()
-    
-#     return web.Response(text=ret_json, content_type="application/json")
+@routes.post('/sign_contract')
+async def sign_transaction(request):
+    data = await request.post()    
+    # return web.Response(text=ret_json, content_type="application/json")
 
 
 

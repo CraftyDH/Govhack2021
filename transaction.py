@@ -3,7 +3,7 @@ from block import blockchain
 from hashlib import sha256
 import time
 
-Const_ID = 0
+CONST_ID = 0
 
 class Transaction:
 	def __init__(self, sender, recipient, amount, hash=0): #user dictionary
@@ -20,9 +20,13 @@ class Transaction:
 		else:
 			self.hash = hash
 		self.tax = blockchain.tax_rate * self.amount
+	
+	@staticmethod
+	def load_json(self, json):
+		pass
 
 	def validate_transaction(self):
-		net_worth = blockchain.get_user_worth(self.sender) #this here
+		net_worth = users.get_user_worth(self.sender) #this here
 		# net_worth = 1000 # JASON MONEY HERE put it here for cheating
 		if net_worth - self.amount < self.amount: 
 			return {"status" : "Insufficient Funds"}
@@ -44,21 +48,16 @@ def create_transaction_no_validation(sender, recipient, amount):
 	blockchain.add_transaction(t)
 	return t
 
-"""
 
-#create_contract (with sender_public_key, recipient_public_key, date_closed, amount_in, amount_out)
-def create_contract(date, amount: int, times : list, sender_public_key : dict, recipient_public_key : dict, condition_type, condition_argument): # Add an Amount
-	global Const_ID
-	Const_ID += 1
-	if condition_type == "withdrawl" and condition_argument == "salary":
-		for i in times:
-			sc = Smart_Contract(time.asctime(), sender_public_key, recipient_public_key, condition_type, condition_argument, Const_ID)
-	try:
-		sc = Smart_Contract(time.asctime(), sender_public_key, recipient_public_key, condition_type, condition_argument, Const_ID)
-		return True
-	except:
-		return False
-	pass
+#(self, date, senders, recipients, condition_argument, id, transaction_timestamps, contract_length)
+def create_contract(date, amount: int, sender_public_key : dict, recipient_public_key : dict, condition_type, condition_arguments): # Add an Amount
+	global CONST_ID
+	if condition_type == "time":
+		return Time_Contract(date, sender_public_key, recipient_public_key, condition_arguments["time_stamp"], condition_arguments["stop_date"], CONST_ID)
+	elif condition_type == "stop_limit":
+		Stop_Limit(date, sender_public_key, recipient_public_key, CONST_ID)
+	CONST_ID += 1
+
 
 
 class Smart_Contract:
@@ -67,19 +66,20 @@ class Smart_Contract:
 	# recipients -> {"node3":55}
 	# amount -> 55
 
-	def __init__(self, date, senders, recipients, condition_type, condition_argument, id):
-		self.date = date #?is date necersarry?
-		self.senders = senders #! WHAT TYPE?
+	def __init__(self, date, senders : dict, recipients : dict, id):
+		self.date = date 
+		self.senders = senders 
 		self.recipients = recipients
-		self.amount = 0
-		self.condition_type = condition_type
-		self.condition_argument = condition_argument
 		self.id = id
+		self.amount = 0
 		#find net value of SC
 		for k, v in self.senders:
 			self.amount += v
 		self.validate()
-		self.validation_keys = {}
+
+	@staticmethod
+	def load_json(self, json):
+		pass # he is creating a new constructor, if you go to 
 
 	def validate(self):
 		#find user object
@@ -103,12 +103,16 @@ class Smart_Contract:
 		
 		self.participants = self.recipientArr + self.senderArr
 
+		self.validation_keys = {x["private_key"]:False for x in self.participants}
+
+
 		# we now have two arrays containing the JSON objects 
 		for x in self.senderArr:
-			net_wallet = blockchain.get_user_worth(x)
+			net_wallet = users.get_user_worth(x)
 			if net_wallet <= self.amount:
 				return {"status": x["username"]+" Has Insufficient Funds"}
-		
+		# push to blockchain
+		self.sign_request()
 
 	def sign_request(self):
 		blockchain.add_SC(self) #! WHAT IS ADD_
@@ -137,21 +141,65 @@ class Smart_Contract:
 		else:
 			raise Exception("Other query condition not implemented: " + str(self.condition_type))
 
-	def sign(self, user_id):
-		#check if user_id exists in participants
-		#check if user_id doesn't exist in signatures
-		#add to signatures
-		#if len(signatures) == len(participants): return Done
-		if user_id in self.validation_keys: return {"status": "failed, already signed document"}
-		self.validation_keys.append(user_id)
-		if len(self.validation_keys) == len(self.senderArr + self.recipientArr):
-			return {"status": "finished"}
-		return {"status": "not finished"}
+	def sign(self, privkey):
+		for k in self.validation_keys.keys():
+			if privkey == k:
+				self.validation_keys[k] = True
+				self.query_signatures()
+				return {"status": "Successful Signature"}
+		return {"status": "Failed Signature: invalid private key"}
 
-	def execute():
+	def query_signatures(self):
+		for x in self.validation_keys.values():
+			if x == False:
+				return {"status":"Constract is not signed"}
+		blockchain.add_contract(self)
+		return {"status":"Constract Completely Signed, Processing now!"}
+
+
+class Stop_Limit(Smart_Contract) :
+	def __init__(self, date, amount, senders, recipients, condition_argument : int, id):
+		Smart_Contract.__init__(self, date, amount, senders, recipients, id)
+		self.limit = condition_argument
+
+	def amount_till_limit(self):
 		pass
 
-	def release():
-		pass
+class Time_Contract(Smart_Contract):
+	def __init__(self, date, amount, senders, recipients, condition_argument : dict, id):
+		Smart_Contract.__init__(self, date, amount, senders, recipients, id)
+		self.transaction_timestamps = Time_Contract.create_transaction_dates(condition_argument)
+		
+	@staticmethod
+	def create_transaction_dates(dates: dict) -> list:
+		start = dates['start_date']
+		increment = dates['increment']
+		end = dates['end_date']
+		start = time.strptime(start)
+		end = time.strptime(end)
+		start_sec = time.mktime(start)
+		end_sec = time.mktime(end)
+		result = []
+		while(start_sec < end_sec):
+			result.append(time.asctime(time.localtime(start_sec)))
+			start_sec += increment * 24 * 60 * 60
+		return result
 
-"""
+	def get_num_previous_transactions(self) -> int:
+		timestamps = [time.strptime(x) for x in self.transaction_timestamps]
+		now = time.strptime(time.asctime())
+		amount = 0
+		for i in timestamps:
+			if i < now:
+				amount+=1
+		return amount
+		
+
+class HedgeFund:
+	def __init__(self):
+		users.create_user("HedgeFund","hedgefund")
+		self.wallet = users.get_user_worth()
+
+	def invest(self):
+		pass
+		

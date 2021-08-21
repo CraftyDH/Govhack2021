@@ -3,3 +3,36 @@
 4. load csv
 3. done?
 6. video
+
+
+REQUIRED
+date, float, senders : dict, recipients : dict
+
+params to post:
+- start_date
+- middle_dates (if applicable)
+- end_date
+- increments (if applicable)
+- limit (if applicable)
+- senders
+- recipients
+- amount
+
+	# did format -> { publickey : amount_contributed }
+	# senders -> {"publicKey": 25, "publicKeys":30}
+	# recipients -> {"publicKeys":55}
+	# amount -> 55
+
+For the smart_contracts
+1. Make Periodic Contract, 
+    -> Custom datestime
+        -> start_date
+        -> middle dates : list [up to the user to choose]
+        -> end_date
+    -> Incremented datetimes
+        -> start_dates
+        -> incremental_dates (every 3 days)
+        -> end_date
+
+2. Make limit Contract
+    -> limit : float

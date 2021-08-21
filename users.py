@@ -1,6 +1,7 @@
 import sys
 sys.path.insert(1, "../dependencies")
-import block, transaction
+from block import *
+from transaction import *
 from safe_json import safe_dump
 import json
 from threading import Lock
@@ -10,7 +11,6 @@ import base58
 mutex = Lock()
 
 CONST_USER_JSON = "./json/user.json"
-
 # #add mutexes here
 # def append_json(user_data, fp):
 #     mutex.acquire()
@@ -130,15 +130,62 @@ def hash_key(key):
 
 def get_private_public_keys():
     users = load_user_json()
-    return [{ 
+    return [
+        {
             "hashed_public_key": hash_key(n["public_key"]), 
             "hashed_private_key": hash_key(n["private_key"]),
             "user": n
         } for n in users
     ]
 
+# Getting User details
+
 def find_user_public_key(public_key):
     return next(filter(lambda n: n["public_key"] == public_key, load_user_json()))
 
 def find_user_private_key(private_key):
     return next(filter(lambda n: n["private_key"] == private_key, load_user_json()))
+
+# Calculating user value
+
+def get_user_worth_from_transactions(user : dict) -> float:
+    accumulated_balance = 0
+    for block in blockchain.chain:
+        for transaction in block:
+            if (transaction.sender == user):
+                accumulated_balance -= transaction.amount
+            elif (transaction.recipient == user):
+                accumulated_balance += transaction.amount
+
+    return accumulated_balance
+
+def get_user_worth_from_smart_contracts_periodic(user: dict) -> float:
+    for block in blockchain.contracts_chain:
+        for contract in block.transactions:
+            if type(contract) == Time_Contract: # Circular dependency IDK how to fix
+                if (user["public_key"] in contract.senders):
+                    contribution_amount = contract.senders[user["public_key"]] * (-1) # Assume the numbers 
+                elif (user["public_key"] in contract.recipients):
+                    contribution_amount = contract.recipients[user["public_key"]]
+                return contract.get_num_previous_transactions() * contribution_amount
+
+# def get_user_worth_from_smart_contracts_threshold(self, user: dict) -> float:
+# 	for block in blockchain.contracts_chain:
+# 		for contract in block.transactions: # time, withdrawals, stop_limit 
+# 			if (type(contract) == Stop_Limit):
+# 				pass
+
+def get_user_worth(user: dict) -> float:
+    return round(get_user_worth_from_transactions(user) + get_user_worth_from_smart_contracts_periodic(user), 2)# + get_user_worth_from_smart_contracts_threshold(user), 2)
+
+def get_user_transactions(user : dict):
+    for block in blockchain.chain:
+        for transaction in block.transactions:
+            if (transaction.sender == user):
+                pass
+            elif (transaction.recipient == user):
+                pass
+    return [transaction.amount for block in blockchain.chain for transaction in block.transactions if (transaction.sender == user) or (transaction.recipient == user)]
+
+def get_all_contracts():
+    return [contract for block in blockchain.contracts_chain for contract in block.transactions]
