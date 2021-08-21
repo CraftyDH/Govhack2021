@@ -95,6 +95,7 @@
                      return;
                  }
                  user = result.user;
+                 $('#balance').html('User: '+user.username+"<br>Balance: $0");
              },
          });
 
@@ -306,7 +307,7 @@
                   </ol>
                </nav>
                <h2 class="h4">All Transactions</h2>
-               <p class="mb-0" id="balance"></p>
+               <p class="mb-0 text-muted" id="balance"></p>
             </div>
             <div class="btn-toolbar mt-5 mb-2 mb-md-0">
               <a class="text-decoration-none mb-5" href="javascript:void"  data-bs-toggle="modal" data-bs-target="#modal-transaction"><kbd class="hacker">$ ./new-transaction.sh</kbd></a>
@@ -318,8 +319,5 @@
             </table>
          </div>
       </main>
-      <script>
-         $('#balance').html('Balance: $'+user.balance);
-      </script>
    </body>
 </html>

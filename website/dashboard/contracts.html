@@ -95,6 +95,7 @@
                      return;
                  }
                  user = result.user;
+                  $('#balance').html('User: '+user.username+"<br>Balance: $0");
              },
          });
 
@@ -115,7 +116,7 @@
             success: function(result){
                var status = result.status;
                if(status != "success"){ //error
-                  Swal.fire('ERR::get_transactions',status,'error');
+                  Swal.fire('ERR::get_contracts',status,'error');
                   return;
                }
                Swal.close();
@@ -177,10 +178,14 @@
              }
          }
 
-         function createTransaction(){
+         function createContract(){
             var sender_private_key = user.private_key;
             var recipient_public_key = $('#recipient_public_key').val();
-            var transaction_amount = $('#transaction_amount').val();
+            var amount = $('#amount').val();
+            var start = $('#start').val();
+            var end = $('#end').val();
+            var limit = $('#limit').val();
+            var increment = $('#increment').val();
 
             Swal.fire({
                text: 'curl -d "sender_private_key='+sender_private_key+'&recipient_public_key='+recipient_public_key+'&amount='+transaction_amount+'&" -x POST /create_transaction',
@@ -191,7 +196,11 @@
             var data= {
                   sender_private_key:sender_private_key,
                   recipient_public_key:recipient_public_key,
-                  amount:transaction_amount
+                  amount:amount,
+                  start:start,
+                  end:end,
+                  limit:limit,
+                  increment:increment
                }
 
             $.ajax({
@@ -303,12 +312,12 @@
                  </div>
                  <div class="modal-body">
                      <div class="mb-3">
-                        <label for="sender" class="form-label">$sender</label>
-                        <input type="number" class="form-control" id="sender" placeholder="$limit" value=0.99>
+                        <label for="recipient_public_key" class="form-label">$recipient_public_key</label>
+                        <input type="text" class="form-control" id="recipient_public_key" placeholder="$recipient_public_key">
                      </div>
                      <div class="mb-3">
-                        <label for="limit" class="form-label">$limit</label>
-                        <input type="number" class="form-control" id="limit" placeholder="$limit" value=0.99>
+                        <label for="amount" class="form-label">$amount</label>
+                        <input type="number" class="form-control" id="amount" placeholder="$amount" value=0>
                      </div>
                      <div class="mb-3">
                         <label class="my-1 me-2" for="type">Type</label>
@@ -344,12 +353,12 @@
                      <div id='type2' class="d-none">
                         <div class="mb-3">
                            <label for="limit" class="form-label">$limit</label>
-                           <input type="number" class="form-control" id="limit" placeholder="$limit" value=0.99>
+                           <input type="number" class="form-control" id="limit" placeholder="$limit" value=0>
                         </div>
                      </div>
                  </div>
                  <div class="modal-footer">
-                     <a class="text-decoration-none" style="cursor:pointer" href="javascript:createTransaction()"><kbd>$ ./send.sh</kbd></a>
+                     <a class="text-decoration-none" style="cursor:pointer" href="javascript:createContract()"><kbd>$ ./send.sh</kbd></a>
                  </div>
              </div>
          </div>
@@ -364,7 +373,7 @@
                   </ol>
                </nav>
                <h2 class="h4">All Contracts</h2>
-               <p class="mb-0" id="balance"></p>
+               <p class="mb-0 text-muted" id="balance"></p>
             </div>
             <div class="btn-toolbar mt-5 mb-2 mb-md-0">
               <a class="text-decoration-none mb-5" href="javascript:void" data-bs-toggle="modal" data-bs-target="#modal-contract"><kbd class="hacker">$ ./smart-contract.sh</kbd></a>
@@ -372,19 +381,20 @@
          </div>
          <div class="card card-body shadow border-0 table-wrapper table-responsive mb-5">
             <h6>Pending Contracts</h6>
+            <hr>
             <table class="table table-hover" id="pending">
                
             </table>
          </div>
          <div class="card card-body shadow border-0 table-wrapper table-responsive mt-5 mb-3">
             <h6>Active Contracts</h6>
+            <hr>
             <table class="table table-hover" id="active">
                
             </table>
          </div>
       </main>
       <script>
-         // $('#balance').html('Balance: $'+user.balance);
          setInterval(function(){
             var id = $("select#type").children("option:selected").val();
             if(id == 1){
