@@ -167,8 +167,8 @@ def find_user_private_key(private_key):
 def get_user_worth_from_transactions(user : dict) -> float: # This is used for the periodic but unpredictable hedge Fund transfers as well as general transfers
     accumulated_balance = 0
     for block in blockchain.chain:
-        for transaction in block:
-            if (transaction.sender == user):
+        for transaction in block.transactions:
+            if (transaction.sender == user): # Nvm i forgor  that i wrote this shit
                 accumulated_balance -= transaction.amount
             elif (transaction.recipient == user):
                 accumulated_balance += transaction.amount
@@ -183,6 +183,7 @@ def get_user_worth_from_smart_contracts_periodic(user: dict) -> float: # This is
                 elif (user["public_key"] in contract.recipients):
                     contribution_amount = contract.recipients[user["public_key"]]
                 return contract.get_num_previous_transactions() * contribution_amount
+    return 0
 
 def get_user_worth(user: dict) -> float:
     return round(get_user_worth_from_transactions(user) + get_user_worth_from_smart_contracts_periodic(user), 2)

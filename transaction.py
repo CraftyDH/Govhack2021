@@ -47,8 +47,6 @@ def create_transaction_no_validation(sender, recipient, amount):
 	blockchain.add_transaction(t)
 	return t
 
-
-
 #(self, date, senders, recipients, condition_argument, id, transaction_timestamps, contract_length)
 """
 sender_private_key
@@ -81,7 +79,7 @@ var data= {
 def create_contract(amount: int, sender_private_key : int, recipient_public_key : int, limit : int, dates): # Add an Amount
 	global CONST_ID, CONST_HEDGEFUND
 	if limit == 0:
-		return Time_Contract(dates["start_date"], amount, [sender_private_key], [recipient_public_key], dates, CONST_ID)
+		return Time_Contract(dates["start_date"], amount, sender_private_key, recipient_public_key, dates, CONST_ID)
 	elif recipient_public_key:
 		# add user to hedgefund
 		# check publickey == hedgefund.public_key
@@ -89,6 +87,8 @@ def create_contract(amount: int, sender_private_key : int, recipient_public_key 
 		CONST_HEDGEFUND.smart_invest(user, amount, limit) # Since its running infinitley, 
 	CONST_ID += 1
 
+def sign_contract(contract_id, user_private_key): #! WHAT KINDA KEY????
+	pass
 
 class Smart_Contract:
 	# did format -> { publickey : amount_contributed }
@@ -98,13 +98,15 @@ class Smart_Contract:
 
 	def __init__(self, date, senders, recipients, id):
 		self.date = date 
-		self.senders = senders 
-		self.recipients = recipients
+		self.senders = senders #senders parameter is just id
+		self.recipients = recipients #recipients parameter is just id
 		self.id = id
 		self.amount = 0
-		# find net value of SC
+		self.amTime_Contractount= 0
+		# {'4884b436627b0c6168163032f28395386ca42163e0dfb2ff25c438b42c33cb41': '012344'}
 		for v in self.senders.values(): #? what is senders
-			self.amTime_Contractount += v # jamie come here
+			print(v)
+			self.amTime_Contractount += int(v) 
 		self.validate()
 
 	@staticmethod
@@ -113,20 +115,20 @@ class Smart_Contract:
 
 	def validate(self): # Flag for Jonte to fix probs tonnes of bugs idk @Jonte
 		#find user object
-		nusers = users.load_user_json()
+		n_users = users.load_user_json()
 		self.senderArr = []
-		for senderK in self.senders.keys():
-			for n in nusers:
-				if n["public_key"] == senderK.public_key:
-					self.senderArr.append(n)
+		for private_key in self.senders.keys():
+			for user in n_users:
+				if user["private_key"] == private_key:
+					self.senderArr.append(user)
 					break
-		else:
-			raise Exception("sender not found")
+			else:
+				raise Exception("sender not found")
 		
 		self.recipientArr = []
-		for recipientK in self.recipients.keys():
-			for n in nusers:
-				if n["public_key"] == recipientK.public_key:
+		for public_key in self.recipients.keys():
+			for n in n_users:
+				if n["public_key"] == public_key:
 					self.recipientArr.append(n)
 					break
 			else:
@@ -135,7 +137,6 @@ class Smart_Contract:
 		self.participants = self.recipientArr + self.senderArr
 
 		self.validation_keys = {x["private_key"]:False for x in self.participants}
-
 
 		# we now have two arrays containing the JSON objects 
 		for x in self.senderArr:
@@ -173,11 +174,16 @@ class Time_Contract(Smart_Contract):
 
 	@staticmethod
 	def create_transaction_dates(dates) -> list:
-		start = dates['start_date']
-		increment = dates['increment']
-		end = dates['end_date']
-		start = time.strptime(start)
-		end = time.strptime(end)
+		start_str = dates['start_date']
+		increment = int(dates['increment'])
+		end_str = dates['end_date']
+
+	#   File "C:\Program Files\WindowsApps\PythonSoftwareFoundatio`n.Python.3.9_3.9.1776.0_x64__qbz5n2kfra8p0\lib\_strptime.py", line 349, in _strptime
+	#     raise ValueError("time data %r does not match format %r" %
+	# ValueError: time data '08/31/2021' does not match format '%a %b %d %H:%M:%S %Y'
+
+		start = time.strptime(start_str, "%m/%d/%Y")
+		end = time.strptime(end_str,"%m/%d/%Y")
 		start_sec = time.mktime(start)
 		end_sec = time.mktime(end)
 		result = []
@@ -209,7 +215,7 @@ class HedgeFund:
 		t = threading.Thread(target=self._increment_user_investment)
 		t.start()
 		
-	def _increment_user_investment(self, user): # Run this method like every 5 mins or something
+	def _increment_user_investment(self): # Run this method like every 5 mins or something (I removed user parameter from this function)
 		while True: 
 			time.sleep(CONST_HEDGEFUND_SLEEP_TIME)
 			mutex.acquire()
@@ -219,7 +225,7 @@ class HedgeFund:
 				self.wallet += added_money
 				if self.invested_users[user][1] <= self.invested_users[user][0]: # invested_users = {"public_key": [invested_amount, limit/threshold]}
 					user_dict = users.get_user_by_public_key(user)
-					create_transaction_no_validation(self.details["private_key"], user_dict["public_key"], self.invested_users[user][0])
+					create_transaction_no_validation(self.details["private_key"], user_dict["public_key"], self.invested_users[user][0]) # Give user money back
 					del self.invested_users[user]
 			mutex.release()
 
@@ -233,10 +239,11 @@ class HedgeFund:
 		# below is jamies code, idk what its for
 		mutex.release()
 		return Smart_Contract(time.asctime(), {"sender": investment}, {"HedgeFund": investment})
-
-CONST_HEDGEFUND = HedgeFund()
-CONST_ID = 0
+		
 CONST_HEDGEFUND_SLEEP_TIME = 5 # seconds
+CONST_ID = 0
+CONST_HEDGEFUND = HedgeFund()
+
 # class Bank(HedgeFund):
 # 	def __init__(self):
 # 		HedgeFund.__init__() # Define stuff in like comments

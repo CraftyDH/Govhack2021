@@ -153,9 +153,24 @@ async def get_usernames(request):
     ret_json = safe_str({"status": "success", "usernames": usernames})
     return web.Response(text=ret_json, content_type="application/json")
 
+
+# parameters: {
+#   "date": "Sun Jun 20 23:21:05 1993",
+#   "senders": [
+#     [*Pubkey0*, amount_contributed], ...
+#   ],
+#   "recipients": [
+#     [*Pubkey1*, amount_contributed], ...
+#   ],
+#   "condition_type": "time" | "withdrawl" | "stop_limit", (one of these 3)
+#   "condition_argument": "Sun Jun 20 23:21:05 1993" | ("salary" | "lumpsum") | "6969"
+# }
+
 @routes.post("/create_smart_contract")
 async def post_smart_contract(request):
     data = await request.post()
+    print("data is " + str(data))
+    #params = data["parameters"]
     if not data['start_date']:
         dates = None
     else:   
@@ -164,8 +179,11 @@ async def post_smart_contract(request):
             "increment" : data["increment"],
             "end_date" : data["end_date"]
         }
-    contract =  t.create_contract(data["amount"], data["sender_private_key"], data["recipient_public_key"], int(data['limit']), dates)
-    ret_json = safe_str(contract)
+    sender_arr = json.loads(data["sender_arr"])
+    recipient_arr = json.loads(data["recipient_arr"])
+    print(sender_arr, recipient_arr)
+    contract =  t.create_contract(data["amount"], sender_arr, recipient_arr, int(data['limit']), dates)
+    ret_json = safe_str({"status": "success", "contract": contract})
     return web.Response(text=ret_json, content_type="application/json")
     
     # return {'status': "failed creating contract"}
@@ -184,8 +202,8 @@ async def get_all_contracts(request): # add error checking
 @routes.post('/sign_contract')
 async def sign_transaction(request):
     data = await request.post()    
-    # return web.Response(text=ret_json, content_type="application/json")
-
+    ret_json = safe_str(sign_contract(data["contract_id"], data["private_key"]))
+    return web.Response(text=ret_json, content_type="application/json")
 
 
 app = web.Application()

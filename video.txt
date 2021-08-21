@@ -1,3 +1,3 @@
 This video aims to covers the following :
-  - the reason behind the project as a whole, why supa and simmilar processes are flawed
+  - the reason behind the project as a whole, why supa and simmilar processes are flawed in 
   - what blockchain is and how it helps to prvent these problems

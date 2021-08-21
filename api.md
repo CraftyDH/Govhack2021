@@ -214,20 +214,18 @@ POST /get_usernames
 ## Smart Contract
 POST /create_smart_contract
 HTTP_FORM Params
-parameters: {
-  "date": "Sun Jun 20 23:21:05 1993",
-  "senders": [
-    [*Pubkey0*, amount_contributed], ...
-  ],
-  "recipients": [
-    [*Pubkey1*, amount_contributed], ...
-  ],
-  "condition_type": "time" | "withdrawl" | "stop_limit", (one of these 3)
-  "condition_argument": "Sun Jun 20 23:21:05 1993" | ("salary" | "lumpsum") | "6969"
+{
+  'amount': int, 
+  sender_arr: String,
+  recipient_arr : String, 
+  'limit': '0',
+  'start_date': '08/31/2021',
+  'increment': '1', 
+  'end_date': '09/01/2021'
 }
 
 ## Success
-{"status": "success"}
+{"status": "success", "contract": SMART_CONTRACT}
 
 ## Failure
 {"status": "failed creating contract"}
@@ -261,6 +259,7 @@ POST /sign_contract
 HTTP_FORM Params
 private_key: String/Int (hex key)
 contract_id: Int
+
 
 ## Success
 {
