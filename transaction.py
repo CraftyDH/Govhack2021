@@ -40,10 +40,11 @@ def create_contract(self, sender_public_key, recipient_public_key, date_closed, 
 	return sc.validate_transaction()
 
 class Smart_Contract:
-	# didc format -> { publickey : amount_contributed }
+	# did format -> { publickey : amount_contributed }
 	# senders -> {"node1":25, "node2":30}
 	# recipients -> {"node3":55}
 	# amount -> 55
+
 	def __init__(self, date, senders, recipients, condition_type, condition_argument):
 		self.date = date #?is date necersarry?
 		self.senders = senders #! I have passed senders and receiver ids rather than the dictionaries themselves. 
@@ -51,24 +52,43 @@ class Smart_Contract:
 		self.amount = 0
 		self.condition_type = condition_type
 		self.condition_argument = condition_argument
-
+		#find net value of SC
 		for k, v in self.senders:
 			self.amount += v
-		for k, v in self.recipients:
-			self.amount += v	
+		self.validate()
 
+	def validate(self):
 		#find user object
 		nusers = users.load_user_json()
-		user = None
+		self.senderArr = []
 		for senderK, senderV in self.senders:
 			for n in nusers:
-				if n.public_key == senderK.public_key:
-					user = n
+				if n["public_key"] == senderK.public_key:
+					self.senderArr.append(n)
 					break
-			else: 
-				raise Exception("user not found")
-		blockchain.get_user_worth(user)
+			else:
+				raise Exception("sender not found")
+		self.recipientArr = []
+		for recipientK, recipientV in self.recipients:
+			for n in nusers:
+				if n["public_key"] == recipientK.public_key:
+					self.recipientArr.append(n)
+					break
+			else:
+				raise Exception("recipient not found")			
+		
+		self.participants = self.recipientArr + self.senderArr
 
+		# we now have two arrays containing the JSON objects 
+		for x in self.senderArr:
+			net_wallet = blockchain.get_user_worth(x)
+			if net_wallet <= self.amount:
+				return {"status": x["username"]+" Has Insufficient Funds"}
+		
+
+	def sign_request(self):
+		blockchain.add_SC(self)
+		return True
 
 	def query_condition(self):
 		#time.asctime([t]) has format of Sun Jun 20 23:21:05 1993'

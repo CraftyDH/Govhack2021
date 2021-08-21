@@ -127,11 +127,6 @@ sender_private_key: String/Int (hex key)
 password: String
 
 ## Success
-self.sender = sender
-		self.recipient = recipient
-		self.amount = amount
-		self.hash = hash
-		self.time = time.asctime()
 {
   "status": "success",
   "transaction": {
@@ -146,3 +141,27 @@ self.sender = sender
 
 ## Failure
 {"status": "failed to create transaction"}
+
+
+## Transactions
+POST /get_user_transactions
+HTTP_FORM Params
+username: String
+
+## Success
+{
+  "status": "success
+  "transactions": [
+    "transaction": {
+    "sender": "9049da8f7b8f8f7317df47ab0ead1180d612888153b95b58efa8ab5e4723c09f",
+		"recipient": "f876c0edf79b72d3fc6fa0199f396d7c4eb55ea4a20ec6df091bfc73489f2c86",
+		"amount": 200,
+		"hash": "f7317df47ab0ead1180d61289049da8f7b8f888153b95b58efa8ab5e4723c09f",
+		"time": "Sun Jun 20 23:21:05 1993", #ascii time
+    "tax": 10
+    }, ...
+  ]
+}
+
+## Failure
+{"status": "get_user_transactions failed"}

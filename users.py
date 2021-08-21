@@ -9,6 +9,8 @@ import base58
 
 mutex = Lock()
 
+CONST_USER_JSON = "./json/user.json"
+
 #add mutexes here
 def append_json(user_data, fp):
     mutex.acquire()
@@ -26,8 +28,8 @@ def modify_json(new_data, fp):
         safe_dump(new_data, f)
     mutex.release()
 
-CONST_USER_JSON = "./json/user.json"
-def load_user_json():
+
+def load_user_json() -> dict:
     mutex.acquire() #mutex so no reading at the same time as writing
     out = {} #fail case is dangerous
     with open(CONST_USER_JSON, "r") as f:
@@ -37,7 +39,7 @@ def load_user_json():
 
 # Functions for retrieving User data and inserting User data.
 
-def create_user(username: str, password: str): 
+def create_user(username: str, password: str, public_key = None): 
     if " " in username or len(username) < 5:
         return {"status": "invalid username"}
 
@@ -45,7 +47,9 @@ def create_user(username: str, password: str):
         return {"status": "invalid password"}
 
     private_key = sha256(base58.b58encode(str(username).encode("ascii"))).hexdigest()
-    public_key = str(sha256(sha256(private_key.encode()).hexdigest().encode()).hexdigest())
+
+    if not (public_key):
+        public_key = str(sha256(sha256(private_key.encode()).hexdigest().encode()).hexdigest())
 
     users = load_user_json()
     for user in users:

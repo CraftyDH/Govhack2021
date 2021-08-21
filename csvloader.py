@@ -4,23 +4,20 @@ from random_username.generator import generate_username
 from random import *
 import transaction
 import block
+import users as u
+import json
 
-csv_file = "D:/govhackdata/block.csv"
-    
-    # newuser =  {
-    #     "username": username,
-    #     "password": password,
-    #     "public_key": public_key,
-    #     "private_key": private_key,
-    # }
+csv_file = "data/block.csv"
 #* make sure to generate only one per hash
+
 def generate_user(public_hash):
-    return {
-        "username" : generate_user(1),
-        "passsword": "".join(choice(string.ascii_letters + string.punctuation + string.digits) for x in range(randint(8, 250)))
-        "public_key": public_hash,
-        "private_key": ""  #generate this
-    }
+    users = json.loads(csv_file)
+    if (public_hash in users):
+        return users[public_hash]
+    else:
+        username = generate_username(1)
+        password =  "".join(choice(string.ascii_letters + string.punctuation  + string.digits) for x in range(randint(8, 250)))
+        return u.create_user(username, password, public_hash)['user']
 
 # block_id, block_hash, block_timestamp, difficulty, transaction_hash, transaction_timestamp, sender, receiver, amount, tax
 
@@ -30,7 +27,37 @@ with open(csv_file, newline='') as f:
     read = csv.csvReader(f)
     next(read)
     for row in read:
-        #block_id: 4728042
+        #make users
+        sender = generate_user(row[6])
+        reciever = generate_user(row[7])
+        #generate transaction
+        #! talk to JAMIE (cool guy/dude)
+        trans = transaction.create_transaction_no_validation(sender, reciever, row[8])
+        if row[0] in blocks:
+            #transaction already exists
+            blocks[row[0]].transactions.append(trans)
+        else:
+            #create block
+            blocks[row[0]] = block.Block(-1, [trans], row[5], -1, row[3]) #! tlak to jamie about -1 #4th argument
+    b = block.blockchain
+    blocks_list = [v for k,v in blocks.items()]
+    for n in sorted(blocks_list, key=(lambda n: n.timestamp)): #maybe reversed? (probably not)
+        proof = self.proof_of_work(n)
+        b.add_block(n, proof)
+    i = iter(b)
+    prev = next(i)
+    prev.compute_hash()
+    for n in i:
+        n.compute_hash()
+        n.prev_hash = prev.hash
+        prev = n
+
+
+    #! put use
+    
+print(b)
+
+#block_id: 4728042
         #block_hash: 0x2ab52915da4a7bece7fe897c5e9cf0d93a40f42c02e4170438975e8f6205728f
         #block_timestamp: 2017-12-14 06:51:19
         #difficulty: 1637664087773349 (nonce)
@@ -42,18 +69,5 @@ with open(csv_file, newline='') as f:
         #tax: 0.00067221
         #block == index, transactions, timestamp, previous_hash, nonce=0
         #index set to negative one until pushed to blockchain #! TALK TO JAMIE
-        
-        #make users
-        sender = generate_user(row[6])
-        reciever = generate_user(row[7])
-        
-        #generate transaction
-        #! talk to JAMIE
-        trans = transaction.create_transaction_no_validation(sender, reciever, row[8])
-        
-        if row[0] in blocks:
-            #transaction already exists
-            pass
-        else:
-            #create block
-            pass
+
+#! talk to jamie about moving pow to be uato claled inside add block

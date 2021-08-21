@@ -93,11 +93,41 @@ async def create_transaction(request):
     if trans["status"] != "success":
         return web.json_response(trans)
     ret_json = safe_str({"status": "success", "transaction": trans})
-    return web.json_response(trans)
+    return web.json_response(ret_json)
 
-@routes.post('/get_local_transactions')
-async def get_transaction():
-    pass
+@routes.post('/get_user_transactions')
+async def get_transaction(request):
+    try:
+        data = await request.post()
+        username = data["username"]
+        ret_trans = [n for block in b.chain for n in block.transactions if n.username == username]
+        ret_json = safe_str({"status": "success", "transactions": ret_trans})
+    except: #no exception here is dangerous
+        ret_json = safe_str({"status": "get_user_transactions failed"})
+    finally:
+        return web.Response(text=ret_json)
+
+
+@routes.post('/get_unsigned_transactions')
+async def get_unsigned_transactions(request):
+    try:
+        data = await request.post()
+        username = data["username"]
+        trans = b.get_unsigned_transactions(username)
+        ret_json = safe_str({"status": "success", "transactions": trans})
+    except: #DANGER DANGER DANGER
+        ret_json = safe_str({"status": "failed getting unsigned user transactions"})
+    finally:
+        return web.Response(text=ret_json)
+
+@routes.post('/sign_transaction')
+async def sign_transaction(request):
+    data = await request.post()
+    ret_json = ""
+    res = b.sign_transaction() #! ADD PARAMS HERE
+    if res: ret_json = safe_str({"status": "success"})
+    else: ret_json = safe_str({"status": "failed signing contract"})
+    return web.Response(text=ret_json)
 
 app = web.Application()
 app.add_routes(routes)

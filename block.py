@@ -5,9 +5,6 @@ import time # Look at the bottom of your file please @Jamie
 import itertools
 from hashlib import sha256
 
-#can we split this file into multiple. like one for server and make calls into a deeper file for blockchain
-#yes
-
 class Block:
 	def __init__(self, index, transactions, timestamp, previous_hash, nonce=0):
 		# values needed for blockheader
@@ -16,14 +13,16 @@ class Block:
 			self.timestamp = timestamp
 			self.previous_hash = previous_hash
 			self.nonce = nonce
+			self.hash = None #! here jamie
 
 	def compute_hash(self): # Construct block header in order to hash it
 		self.trans = ''
 		block_header = ""
 		for x in self.transactions:
 			self.trans += x #transactions is a list of strings
-			block_header = self.previous_hash + self.trans + str(self.timestamp) + str(self.nonce)
-		return sha256(block_header.encode()).hexdigest()
+		block_header = self.previous_hash + self.trans + str(self.timestamp) + str(self.nonce)
+		self.hash = sha256(block_header.encode()).hexdigest()
+		return self.hash
 	def __str__(self):
 		return "Block(" + ",".join(map(str, [self.index, self.transactions, self.timestamp, self.previous_hash, self.nonce])) + ")"
 
@@ -43,12 +42,13 @@ class ChainList:
 	def last_block(self):
 		if self.next == None: return self.block
 		else: return self.next.last_block()
-	def append(self, block):
+	def append(self, block, index):
 		if self.next == None:
 			nextt = ChainList(block)
+			block.index = index
 			self.next = nextt
 			return nextt
-		else: return self.next.append(block)
+		else: return self.next.append(block, index+1)
 	def insert_at(self, block, index):
 		if index < 0: raise Exception("negative index passed)") # (add negative indexing later?
 		elif index == 0:
@@ -68,7 +68,7 @@ class ChainList:
 		else:
 			return self.next.pop()
 	def pop_at(self, index):
-		raise Exception("pop at not implemented yet") #i can't be bothered and it shouldn't come up right?
+		raise Exception("pop at not implemented yet") #I can't be bothered and it shouldn't come up right?
 	def __str__(self):
 		return "[" + ", ".join(map(str, iter(self))) + "]" # bit unecersarry, as it returns a list anyway lol (but theoretical issues whatever)
 
@@ -79,6 +79,27 @@ class Blockchain:
 		self.difficulty = 2
 		self.create_genisis()
 		self.tax_rate = .05
+		self.unsigned_contracts = []
+
+	def add_SC(self, SC):
+		self.unsigned_contracts.append(SC)
+		return {"status":"Smart Contract submitted to be signed."}
+
+	def get_unsigned_transactions(self, username):
+		arr = []
+		for x in self.unsigned_contracts:
+			if x.participants["username"] == username:
+				arr.append(x)
+		return arr
+
+# to be called as get_SC_participants(SC, "senders")
+# or get_SC_participants(SC, "recipients")
+#Hey Jamie, could we have a method get_unsigned_transactions(self, username), yea
+	def get_SC_participants(self, SC):
+		return {"senders":SC.senderArr, "recipients":recipientArr}
+
+	def __iter__(self):
+		return iter(self.chain)
 
 	def create_genisis(self):
 		block = Block(0, [], time.time_ns(), "0")
@@ -105,6 +126,7 @@ class Blockchain:
 		return compute_hash
 
 	def add_block(self, block, proof):
+		#auto called here
 		previous_hash = self.last_block.hash
 		if previous_hash != block.previous_hash:
 			return False
@@ -113,8 +135,8 @@ class Blockchain:
 		# we want this to only take the fisrt 50 elements, where the transactions have been sorted by amount
 		self.unconfirmed_transactions = self.unconfirmed_transactions[50:]
 		block.hash = proof
-		self.chain.append(block)
-		return True #?what?
+		self.chain.append(block, 0)
+		return True
 
 	def is_valid_proof(self, block, block_hash):
 		return (block_hash.startswith('0' * self.difficulty) and block_hash == block.compute_hash())
