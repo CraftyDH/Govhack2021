@@ -91,7 +91,6 @@ async def create_transaction(request):
     if not data['recipient_public_key']: # If the passed recipient key is empty then it won't be in the database
         ret_json = safe_str({"status": "invalid recipient public key"}) 
         return web.Response(text=ret_json, content_type="application/json")
-
     if data["amount"]: # Here we check if the amount parameter is given as none we just pass it as 0 to the transaction class
         trans = t.create_transaction_no_validation(data["sender_private_key"], data["recipient_public_key"], data["amount"])
     else: # If data['amount'] == null/None 
@@ -156,10 +155,21 @@ async def get_usernames(request):
 
 @routes.post("/create_smart_contract")
 async def post_smart_contract(request):
-    data = await request.post()["parameters"]
-    if t.create_contract(data): # THIS WON'T WORK IF JAMIE DOESN'T RETURN A BOOl
-        return {"status": "success"}
-    return {'status': "failed creating contract"}
+    data = await request.post()
+    if not data['start_date']:
+        dates = None
+    else:   
+        dates = {
+            "start_date": data["start_date"],
+            "increment" : data["increment"],
+            "end_date" : data["end_date"]
+        }
+    contract =  t.create_contract(data["amount"], data["sender_private_key"], data["recipient_public_key"], int(data['limit']), dates)
+    ret_json = safe_str(contract)
+    return web.Response(text=ret_json, content_type="application/json")
+    
+    # return {'status': "failed creating contract"}
+
 
 @routes.post('/get_all_contracts')
 async def get_all_contracts(request): # add error checking

@@ -188,37 +188,43 @@
             var increment = $('#increment').val();
 
             Swal.fire({
-               text: 'curl -d "sender_private_key='+sender_private_key+'&recipient_public_key='+recipient_public_key+'&amount='+transaction_amount+'&" -x POST /create_transaction',
+               text: 'curl -x POST /create_smart_contract',
                icon:'info',
                showConfirmButton: false,
             });
+
+            sender_arr = {}
+            recipient_arr = {}
+
+            sender_arr[sender_private_key] = amount
+            recipient_arr[recipient_public_key] = amount
             
             var data= {
-                  sender_private_key:sender_private_key,
-                  recipient_public_key:recipient_public_key,
-                  amount:amount,
-                  start:start,
-                  end:end,
-                  limit:limit,
-                  increment:increment
-               }
+               amount:amount,
+               sender_private_key: sender_arr,
+               recipient_public_key: recipient_arr,
+               limit: limit,
+               start_date: start,
+               increment:increment,
+               end_date: end
+            }
 
             $.ajax({
                type: "POST",
                async: true,
-               url: "/create_transaction",
+               url: "/create_smart_contract",
                cache: false,
                data:data,
                success: function(result){
                   var status = result.status;
                   if(status != "success"){ //error
-                        Swal.fire('ERR::create_transaction',status,'error');
+                        Swal.fire('ERR::create_smart_contract',status,'error');
                         return;
                   }
                   Swal.close();
                   Swal.fire({
                      icon:'success',
-                     html:'<kbd style="color:rgb(51,255,51)">$ ./create_transaction success!</kbd>',
+                     html:'<kbd style="color:rgb(51,255,51)">$ ./create_smart_contract success!</kbd>',
                   }).then((result) => {
                      $('#close-transaction').click();
                   })

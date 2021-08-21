@@ -78,8 +78,19 @@ def get_usernames():
             usernames.append(user["username"])
     return usernames if usernames else False
 
+def get_user_by_public_key(public_key):
+    users = load_user_json()
+    for user in users:
+        if user["public_key"] == public_key:
+            return user
 
-# Modifying the JSON database
+def get_user_by_username(username): # these already exist but i dont know how to use them look at line 154 (line 154 is public key)
+    users = load_user_json()
+    for user in users:
+        if user["username"] == username:
+            return user
+    raise Exception("no user found with username")
+
 def modify_password(username: str, password: str, new_password: str) -> bool:
     users = load_user_json()
     if len(password) <= 5 or len(password) >= 255:
@@ -94,6 +105,8 @@ def modify_password(username: str, password: str, new_password: str) -> bool:
             return {"status": "incorrect password"}
     return {"status": "no user found"}
 
+
+
 def delete_user(username: str, password : str) -> bool:
     users = load_user_json()
     for user in users:
@@ -104,6 +117,7 @@ def delete_user(username: str, password : str) -> bool:
                 return {"status": "success"}
             return {"status": "incorrect password"}
     return {"status": "no user found"}
+
 
 
 def login(username: str, password: str):
@@ -143,9 +157,10 @@ def get_private_public_keys():
 
 def find_user_public_key(public_key):
     return next(filter(lambda n: n["public_key"] == public_key, load_user_json()))
-
+    
 def find_user_private_key(private_key):
     return next(filter(lambda n: n["private_key"] == private_key, load_user_json()))
+    
 
 # Calculating user value
 

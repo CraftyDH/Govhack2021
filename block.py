@@ -17,7 +17,6 @@ class Block:
 			self.previous_hash = previous_hash
 			self.nonce = nonce
 			self.hash = None #! here jamie
-
 	def compute_hash(self): # Construct block header in order to hash it
 		self.trans = ''
 		block_header = ""
@@ -86,19 +85,6 @@ class Blockchain:
 		self.create_genisis()
 		self.tax_rate = .05
 		self.unsigned_contracts = []
-		
-	@staticmethod
-	def load_json(self, json_in):
-		b = Blockchain()
-		# b.unconfirmed_transactions = [transaction.Transaction.load_json(n) for n in json_in["unconfirmed_transactions"]]
-		# b.unconfirmed_contracts = [transaction.Smart_Contract.load_json(n) for n in json_in["unconfirmed_contracts"]
-		# b.chain = json_in["chain"] #load json recursive here
- 		# b.contracts_chain = json_in["contracts_chain"] #load json recursive here
-		# b.difficulty = json_in["difficulty"]
-		# b.tax_rate = json_in["tax_rate"]
-		# b.unsigned_contracts = json_in["unsigned_contracts"] #load json recursive here
-		# return b
-
 	def add_SC(self, SC):
 		self.unsigned_contracts.append(SC)
 		return {"status":"Smart Contract submitted to be signed."}
@@ -113,6 +99,7 @@ class Blockchain:
 # to be called as get_SC_participants(SC, "senders")
 # or get_SC_participants(SC, "recipients")
 #Hey Jamie, could we have a method get_unsigned_transactions(self, username), yea
+
 	def get_SC_participants(self, SC):
 		return {"senders":SC.senderArr, "recipients": SC.recipientArr}
 
@@ -202,10 +189,10 @@ class Blockchain:
 		if self.unconfirmed_contracts == []: return {"status":"No contracts to mine"}
 		last_block = self.last_contract_block
 		new_block = Block( 
-			index=self.last_block.index + 1,			
+			index=last_block.index + 1,			
 			transactions=self.unconfirmed_contracts[:CONST_TRANSACTS_IN_BLOCK_NUM], # we want this to only take the first CONST_TRANSACTS_IN_BLOCK_NUM elements, where the transactions have been sorted by amount
 			timestamp=time.time_ns(),
-			previous_hash=self.last_block.hash
+			previous_hash=last_block.hash
 		)
 		proof = self.proof_of_work(new_block)
 		self.add_contracts_block(new_block, proof)
@@ -213,7 +200,7 @@ class Blockchain:
 
 	def add_transaction(self, trans):
 		self.unconfirmed_transactions.append(trans)
-		return
+		return #! NOT RETURNING ANYTHING
 
 	def add_contract(self, contract):
 		self.unconfirmed_contracts.append(contract)
@@ -222,10 +209,10 @@ class Blockchain:
 
 blockchain = Blockchain() #! POTENTIAL ERROR WITH EMPTY FILE. CHECK LATer
 
-# BLOCK_JSON_FILE = "../json/block.json"
-# def store_chain():
-# 	safe_dump(blockchain, BLOCK_JSON_FILE)
+BLOCK_JSON_FILE = "../json/block.json"
+def store_chain():
+ 	safe_dump(blockchain, BLOCK_JSON_FILE)
 
-# def load_chain():
-# 	json_in = json.loads(open(BLOCK_JSON_FILE, "r").read())
-# 	return Blockchain.load_json(json_in)
+def load_chain():
+ 	json_in = json.loads(open(BLOCK_JSON_FILE, "r").read())
+ 	return Blockchain.load_json(json_in)
