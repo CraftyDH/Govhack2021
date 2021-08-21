@@ -19,7 +19,7 @@
                 background: #000;
             }
 
-            kbd{
+            .hacker{
                 color:rgb(51,255,51) !important;
             }
         </style>
@@ -43,9 +43,9 @@
                     <a id='h1' class="nav-link" href="javascript:jump('about')">About</a>
                   </li>
                 </ul>
-                <a class="text-decoration-none" href="./user.html"><kbd>$ ./login.sh</kbd></a>
+                <a class="text-decoration-none" href="./login"><kbd>$ ./login.sh</kbd></a>
                 <small style="margin-left: .5rem;margin-right: .5rem;">/</small>
-                <a class="text-decoration-none" href="./user.html"><kbd>$ ./signup.sh</kbd></a>
+                <a class="text-decoration-none" href="./login?act=signup"><kbd>$ ./signup.sh</kbd></a>
               </div>
             </div>
         </nav>
@@ -57,14 +57,14 @@
             <div style="width:80%;
                     position:absolute;
                     left:50%;
-                    top:50%;
-                    transform: translate(-50%,-50%);text-align:center;">
+                    top:45%;
+                    transform: translate(-50%,-55%);text-align:center;">
                 <h1 class="text-white font-monospace fw-bold mb-3" id="title" style="font-size: 5.5rem;">GriffinCoin</h1>
                 <a class="mt-2 mb-3 font-monospace fw-light" id="desc" style="font-size: 1.25rem;color: rgb(196, 196, 196);">A blockchain ensuring the safety of Superannuation investments for Australian Citizens</a>
                 <p class="fw-light fs-4" id="learnMore" style="padding-top:7.5rem;display: none;">
-                    <kbd id="learnMoreText">$ ./about.sh</kbd>
+                    <kbd class="hacker" id="learnMoreText">$ ./about.sh</kbd>
                     <br>
-                    <kbd id="learnMoreText2">0% ====================> 100%</kbd>
+                    <kbd class="hacker" id="learnMoreText2">0% ====================> 100%</kbd>
                 </p>
             </div>
         </div>

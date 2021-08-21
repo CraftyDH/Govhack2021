@@ -1,10 +1,12 @@
 import sys
 sys.path.insert(1, "../dependencies")
-#import block, transactions, base58
-import json
+import block, transaction
 from safe_json import safe_dump
-import hashing
+import json
 from threading import Lock
+from hashlib import sha256
+import base58
+
 mutex = Lock()
 
 #add mutexes here
@@ -36,59 +38,36 @@ def load_user_json():
 # Functions for retrieving User data and inserting User data.
 
 def create_user(username: str, password: str): 
-    #! JAMIE FIX THIS
-    # private_key = sha256(base58.b58encode(str(username).encode("ascii"))).hexdigest()
-    # public_key = str(sha256(sha256(private_key.encode()).hexdigest().encode()).hexdigest())
-    # check to see if username is not inside the database
+    if " " in username or len(username) < 5:
+        return {"status": "invalid username"}
 
-    private_key = hashing.hash(username) #? what? why is hashing hashing the username
-    public_key = hashing.hash(private_key)
+    private_key = sha256(base58.b58encode(str(username).encode("ascii"))).hexdigest()
+    public_key = str(sha256(sha256(private_key.encode()).hexdigest().encode()).hexdigest())
 
     file = open(CONST_USER_JSON)
     users = json.load(file)
     for user in users:
         if (user["username"] == username):
-            return {"username": None}
+            return {"status": "user exists"}
     
     newuser =  {
         "username": username,
         "password": password,
         "public_key": public_key,
         "private_key": private_key,
-        "local_ledger": []
+    }
+    append_json(newuser, CONST_USER_JSON)
+    return {
+        "status": "success",
+        "user": newuser
     }
 
-    append_json(newuser, CONST_USER_JSON)
-    return newuser
-
-def get_user(username: str):
-    users = load_user_json()
-    for user in users:
-        if (user["username"] == username):
-            return {
-                "username": username,
-                "password": user["password"],
-                "public_key": user["public_key"],
-                "private_key": user["private_key"],
-                "local_ledger": user["local_ledger"]
-                }
-    return {"status": "no user found"}
-
 # Modifying the JSON database
-
-def modify_username(username: str, new_username: str, password: str) -> bool:
-    users = load_user_json()
-    for user in users:
-        if user["username"] == username:
-            if user["password"] == password:
-                user["username"] = new_username
-                modify_json(users, CONST_USER_JSON)
-                return {"message": "success"}
-            return {"message": "incorrect password"}
-    return {"status": "no user found"} # User doesn't exist
-
 def modify_password(username: str, password: str, new_password: str) -> bool:
     users = load_user_json()
+    if len(password) <= 8 or len(password) >= 255:
+        return {"status": "invalid password"}
+
     for user in users:
         if user["username"] == username:
             if user["password"] == password:
@@ -100,34 +79,34 @@ def modify_password(username: str, password: str, new_password: str) -> bool:
 
 def delete_user(username: str, password : str) -> bool:
     users = load_user_json()
-    for (index, user) in enumerate(users):
+    for user in users:
         if user["username"] == username:
             if user["password"] == password:
-                del users[index]
+                user["password"] = None
                 modify_json(users, CONST_USER_JSON)
                 return {"status": "success"}
             return {"status": "incorrect password"}
     return {"status": "no user found"}
 
-
-def add_to_local_ledger(username: str, password: str, transact) -> bool: # Adding local transactions to the local ledger
-    users = load_user_json()
-    for user in users:
-        if (user["username"] == username):
-            if (user["password"] == password):
-                user["local_ledger"].append(transact)
-                modify_json(users, CONST_USER_JSON)
-                return {"status": "success"}
-            return {"status": "incorrect password"}
-    return {"status": "no user found"}
 
 # Handling Login's and Transactions
 
 def login(username: str, password: str): # -> User: # this is the same process as get_user?
     users = load_user_json()
     for user in users:
-        if user["username"] == username:
-            if user["password"] == password:
-                return {"status": "success"}
+        if user["username"] == username and user["password"] == None:
+            return {"status": "user deleted"}
+        elif user["username"] == username and user["password"] == password:
+            return {
+                "status": "success",
+                "user": {
+                    "username": username,
+                    "password": user["password"],
+                    "public_key": user["public_key"],
+                    "private_key": user["private_key"],
+                    "local_ledger": user["local_ledger"]
+                }
+            }
+        elif user["username"] == username:
             return {"status": "incorrect password"}
     return {"status": "no user found"}

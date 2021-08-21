@@ -1,0 +1,119 @@
+<html>
+    <head>
+        <title>GriffinCoin - User</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" referrerpolicy="no-referrer" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/textillate/0.4.0/jquery.textillate.min.js" integrity="sha512-0bHMhYsdpiur1bT84kDH4D7cpxFQ9O7uA5yxVAqWC87h552Xt0swX4M+ZlXMKE8oPVRIJ5lAwXWO2UWeDwJJOw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/lettering.js/0.7.0/jquery.lettering.min.js" integrity="sha512-9ex1Kp3S7uKHVZmQ44o5qPV6PnP8/kYp8IpUHLDJ+GZ/qpKAqGgEEH7rhYlM4pTOSs/WyHtPubN2UePKTnTSww==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+        <style>
+          ::placeholder {
+            font-size: .65rem;
+          }
+
+          .hacker{
+                color:rgb(51,255,51) !important;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- nav -->
+        <nav class="sticky-top navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
+              <a class="navbar-brand mr-3" href="/#banner">
+                <img src="https://hackerspace.govhack.org/assets/logo-footer-91aec9295ddf37950968f2a51d0dbcfdbcf479920bd4d6d04d368c531143ef2e.svg" alt="logo" height="60">
+              </a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <li class="nav-item">
+                    <a id='h0' class="nav-link active" aria-current="page" href="/#banner">Home</a>
+                  </li>
+                  <li class="nav-item">
+                    <a id='h1' class="nav-link" href="/#about">About</a>
+                  </li>
+                </ul>
+                <a class="text-decoration-none" href="./login"><kbd>$ ./login.sh</kbd></a>
+                <small style="margin-left: .5rem;margin-right: .5rem;">/</small>
+                <a class="text-decoration-none" href="./login?act=signup"><kbd>$ ./signup.sh</kbd></a>
+              </div>
+            </div>
+        </nav>
+
+        <div id="signup" class="container pt-2 w-25 shadow-lg" style="border-radius: 15px;margin-top:7.5rem">
+          <div class="p-4">
+            <div id="signupAlert" class="mb-3">
+              <h3 class="text-center mb-3 font-monospace">Sign Up</h1>
+            </div>
+              <div class="mb-3">
+                <label for="s_username" class="form-label font-monospace">Username</label>
+                <input type="email" class="form-control fs-6 font-monospace" id="s_username" placeholder="len(username) >= 5 && ' ' not in username">
+              </div>
+              <div class="mb-3">
+                <label for="s_password" class="form-label font-monospace">Password</label>
+                <input type="password" class="form-control fs-6 font-monospace" id="s_password" placeholder=" 8 <= len(password) <= 255"></textarea>
+              </div>
+              <div class="mt-4 mb-2 text-center">
+                <a class="mt-2 text-decoration-none mb-5" href="javascript:signup()"><kbd class="hacker">$ ./do-signup.sh</kbd></a>
+              </div>
+            </div>
+        </div>
+
+        <script>
+            function getUrlParam(name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);  
+                if (r != null) return unescape(r[2]); return null; 
+            }
+
+            var signupForm = $('#signup');
+            // var loginForm = $('#login');
+            signupForm.show();
+            // loginForm.show();
+
+            if(getUrlParam('act')){//signup
+              
+            }
+            else{//login
+
+            }
+
+            function signup(){
+              var username = $('#s_username').val();
+              var password = $('#s_password').val();
+              var alert = $('#s_alert');
+              if(alert){
+                alert.remove();
+              }
+              $.ajax({
+                type: "POST",
+                async: true,
+                url: "/create_account",
+                cache: false,
+                data: {
+                    username,
+                    password
+                },
+                success: function(result){
+                  var status = result.status;
+                  if(status != "success"){ //error
+                      // Already exists -> show an alert (keep it as json make it looks like hacker smh)
+                      $("#signupAlert").append('<div id="s_alert" class="alert alert-danger font-monospace" style="font-size:0.75rem;padding-top:0.5rem!important;padding-bottom:0.5rem!important" role="alert">'+JSON.stringify(result)+'</div>');
+                      return;
+                  }
+                  // continue
+                  var user = result.user;
+                  user.public_key = user.public_key.substring(0,10)+"...";
+                  user.private_key = user.private_key.substring(0,10)+"...";
+                  $("#signupAlert").append('<div id="s_alert" class="alert alert-success font-monospace" style="font-size:0.75rem;padding-top:0.5rem!important;padding-bottom:0.5rem!important" role="alert">Success!<br>'+JSON.stringify(user,null,'\t')+'</div>');
+                },
+              });
+            }
+        </script>
+    </body>

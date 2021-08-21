@@ -1,14 +1,12 @@
-import hashing
 #, base58
 import math
 import random
 import time # Look at the bottom of your file please @Jamie
 import itertools
+from hashlib import sha256
 
 #can we split this file into multiple. like one for server and make calls into a deeper file for blockchain
 #yes
-
-#! OI USE snake_case NOT CamelCase JAMIE
 
 class Block:
 	def __init__(self, index, transactions, timestamp, previous_hash, nonce=0):
@@ -19,14 +17,15 @@ class Block:
 			self.previous_hash = previous_hash
 			self.nonce = nonce
 
-	def compute_hash(self):
-	# Construct block header in order to hash it
+	def compute_hash(self): # Construct block header in order to hash it
 		self.trans = ''
 		block_header = ""
 		for x in self.transactions:
-			self.trans += x
+			self.trans += x #transactions is a list of strings
 			block_header = self.previous_hash + self.trans + str(self.timestamp) + str(self.nonce)
-		return hashing.hash(block_header)
+		return sha256(block_header.encode()).hexdigest()
+	def __str__(self):
+		return "Block(" + ",".join(map(str, [self.index, self.transactions, self.timestamp, self.previous_hash, self.nonce])) + ")"
 
 class ChainList:
 	def __init__(self, block, next=None):
@@ -35,6 +34,8 @@ class ChainList:
 	def iterator(self): #returns iterator for iterating over chain list, use with for loop to iterate over blockchain (this is very ugly but I don't care)
 		if self.next == None: return [self.block]
 		return [self.block] + self.next.iterator()
+	def __iter__(self):
+		return iter(self.iterator())
 	def index_into(self, index):
 		if index < 0: raise Exception("passed index less than 0") #(add negative indexing later?)
 		elif index == 0: return self.block
@@ -68,12 +69,13 @@ class ChainList:
 			return self.next.pop()
 	def pop_at(self, index):
 		raise Exception("pop at not implemented yet") #i can't be bothered and it shouldn't come up right?
+	def __str__(self):
+		return "[" + ", ".join(map(str, iter(self))) + "]" #bit unecersarry, as it returns a list anyway lol (but theoretical issues whatever)
 
-# blockchain = Blockchain()
 class Blockchain: 
 	def __init__(self):
 		self.unconfirmed_transactions = []
-		self.chain = None
+		self.chain = None #ChainList
 		self.difficulty = 2
 		self.create_genisis()
 
@@ -91,14 +93,14 @@ class Blockchain:
 		return self.chain.index_into(index)
 
 	def proof_of_work(self, block):
-		print("POW initiated\nTarget: "+'0'*Blockchain.difficulty+"\n")
+		print("POW initiated\nTarget: "+'0'*self.difficulty+"\n")
 		# Hash at nonce 0
 		compute_hash = block.compute_hash()
 		# Hash nonce from 1...n (where n is amount of hashes to get target hash)
-		while not compute_hash.startswith('0'*Blockchain.difficulty):
+		while not compute_hash.startswith('0'*self.difficulty):
 			block.nonce += 1
 			compute_hash = block.compute_hash()
-			print("Nonce: "+str(block.nonce)+"\nHash: "+str(compute_hash)+"\n========")
+			print("Nonce: "+str(block.nonce)+"\nHash: "+str(compute_hash)+"\n"+"="*(6+len(str(compute_hash))))
 		return compute_hash
 
 	def add_block(self, block, proof):
@@ -116,23 +118,29 @@ class Blockchain:
 		return 1
 
 	def is_valid_proof(self, block, block_hash):
-		return (block_hash.startswith('0' * Blockchain.difficulty) and block_hash == block.compute_hash())
-
+		return (block_hash.startswith('0' * self.difficulty) and block_hash == block.compute_hash())
 
 	def mine(self):
-		if not self.unconfirmed_transactions:
-			print("ERROR: No transactions to mine")
-			return False
-		lastBlock = self.last_block
+		if self.unconfirmed_transactions == []:
+			return {"status":"No transactions to mine"}
+		last_block = self.last_block
 		new_block = Block(index=last_block.index + 1,
-		
 							# we want this to only take the fisrt 50 elements, where the transactions have been sorted by amount
 							transactions=self.unconfirmed_transactions[:50],
-
 							timestamp=time.time_ns(),
-							previous_hash=last_block.hash)
+							previous_hash=last_block.hash
+		)
 		proof = self.proof_of_work(new_block)
 		self.add_block(new_block, proof)
-		return new_block.index
+
+	def get_user_worth(self, user):
+		net_worth = sum[transaction.amount for block in blockchain for transaction in block]
+		for block in blockchain.chain:
+			for transaction in block:
+				if transaction.sender == user or transaction.recipient == user:
+					net_worth += transaction.amount
+		return net_worth
 
 blockchain = Blockchain()
+# blockchain.mine()
+# print(blockchain.chain)
