@@ -165,6 +165,7 @@ class Blockchain:
 		self.unconfirmed_contracts = self.unconfirmed_contracts[CONST_TRANSACTS_IN_BLOCK_NUM:]
 		block.hash = proof
 		self.contracts_chain.append(block, 0)
+		
 		return True
 
 	def is_valid_proof(self, block, block_hash):
@@ -194,6 +195,8 @@ class Blockchain:
 			timestamp=time.time_ns(),
 			previous_hash=last_block.hash
 		)
+		for n in self.unconfirmed_contracts:
+			n.status = "active"
 		proof = self.proof_of_work(new_block)
 		self.add_contracts_block(new_block, proof)
 		return {"status": "success"}

@@ -156,10 +156,16 @@ def get_private_public_keys():
 # Getting User details
 
 def find_user_public_key(public_key):
-    return next(filter(lambda n: n["public_key"] == public_key, load_user_json()))
+    try:
+        return next(filter(lambda n: n["public_key"] == public_key, load_user_json()))
+    except StopIteration:
+        return False
     
 def find_user_private_key(private_key):
-    return next(filter(lambda n: n["private_key"] == private_key, load_user_json()))
+    try:
+        return next(filter(lambda n: n["private_key"] == private_key, load_user_json()))
+    except StopIteration:
+        return False
     
 
 # Calculating user value

@@ -123,7 +123,7 @@
 
                var table = $('#pending').DataTable({
                   responsive: true,
-                  "ajax": '/'+username+'/get_transactions_data',
+                  "ajax": '/' + username + '/get_all_contracts/pending',
                   columns: [
                      { title: "Sender" },
                      { title: "Recipient" },
@@ -144,7 +144,7 @@
 
                var table2 = $('#active').DataTable({
                   responsive: true,
-                  "ajax": '/'+username+'/get_transactions_data',
+                  "ajax": '/' + active + '/get_all_contracts/active',
                   columns: [
                      { title: "Sender" },
                      { title: "Recipient" },

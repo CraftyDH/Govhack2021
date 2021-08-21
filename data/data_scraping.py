@@ -4,8 +4,8 @@ from bs4 import BeautifulSoup as soup
 # New data format
 # block_id, block_hash, block_timestamp, difficulty, transaction_hash, transaction_timestamp, sender, receiver, amount, tax
 # Made by Manindra
-CONST_DATA_PATH = "D:/govhackdata/blocks_2020_08_14_09_00_00.csv"
-CONST_NEW_DATA_PATH = "D:/govhackdata/block.csv"
+CONST_DATA_PATH = "blocks_2020_08_14_09_00_00.csv"
+CONST_NEW_DATA_PATH = "block.csv"
 CONST_HEADERS = {
 'authority': 'scrapeme.live',
 'dnt': '1',

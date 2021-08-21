@@ -232,6 +232,8 @@ HTTP_FORM Params
 
 ## Get all contracts
 POST /get_all_contracts
+HTTP_FORM Params
+username: String
 
 ## Success
 {

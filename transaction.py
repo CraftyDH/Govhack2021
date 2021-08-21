@@ -39,13 +39,12 @@ def twelve_chars(amount):
 
 def create_transaction(sender, recipient, amount): 
 	t = Transaction(sender, recipient, amount)
-	# return t.validate_transaction()
-	return t.cheat_transaction()
+	return t.validate_transaction()
 
-def create_transaction_no_validation(sender, recipient, amount):
-	t = Transaction(sender, recipient, amount)
-	blockchain.add_transaction(t)
-	return t
+# def create_transaction_no_validation(sender, recipient, amount):
+# 	t = Transaction(sender, recipient, amount)
+# 	blockchain.add_transaction(t)
+# 	return t
 
 #(self, date, senders, recipients, condition_argument, id, transaction_timestamps, contract_length)
 """
@@ -87,7 +86,35 @@ def create_contract(amount: int, sender_private_key : int, recipient_public_key 
 		CONST_HEDGEFUND.smart_invest(user, amount, limit) # Since its running infinitley, 
 	CONST_ID += 1
 
+def get_all_contracts(username, pending):
+	# status types: "pending", "active", "fulfilled", "declined"
+	#contracts should be on blockchain and hedgefund
+	contracts = []
+	if username in CONST_HEDGEFUND.invested_users:
+		contracts.append(CONST_HEDGEFUND)
+	if pending == "active":
+		for block in blockchain.contracts_chain:
+			for contract in block.transactions:
+				if contract.status != "active": continue
+				elif username in contract.senders: contracts.append(contract)
+				elif username in contracts.recipients: contracts.append(contract)
+	elif pending == "pending":
+		for block in blockchain.unsigned_contracts + blockchain.unconfirmed_contracts:
+			for contract in block.transactions:
+				if username in contract.senders: contracts.append(contract)
+				elif username in contracts.recipients: contracts.append(contract)
+	elif pending == "fulfilled":
+		for block in blockchain.contracts_chain:
+			for contract in block.transactions:
+				if contract.status != "fulfilled": continue
+				elif username in contract.senders: contracts.append(contract)
+				elif username in contracts.recipients: contracts.append(contract)
+	elif pending == "declined":
+		raise Exception("ERROR TRYING TO FIND DECLINED TRANSACTIONS NOT IMPLEMENTED")
+	return contracts
+
 def sign_contract(contract_id, user_private_key): #! WHAT KINDA KEY????
+	raise NotImplementedError
 	pass
 
 class Smart_Contract:
@@ -108,6 +135,14 @@ class Smart_Contract:
 			print(v)
 			self.amTime_Contractount += int(v) 
 		self.validate()
+		self.status = "pending"
+		particiSTR = ''
+		for x in [self.senders,self.recipients]:
+			for y in x.items():
+				particiSTR += str(y)
+		self.hash = sha256((str(self.id)+particiSTR).encode()).hexdigest()
+		self.tax = blockchain.tax_rate * self.amount
+
 
 	@staticmethod
 	def load_json(self, json):
@@ -146,8 +181,12 @@ class Smart_Contract:
 		# push to blockchain
 		self.sign_request()
 
+	def decline_contract(self):
+		self.status = "declined"
+		
+
 	def sign_request(self):
-		blockchain.add_SC(self) #! WHAT IS ADD_
+		blockchain.add_SC(self) 
 		return True
 
 	def sign(self, privkey):
@@ -177,10 +216,6 @@ class Time_Contract(Smart_Contract):
 		start_str = dates['start_date']
 		increment = int(dates['increment'])
 		end_str = dates['end_date']
-
-	#   File "C:\Program Files\WindowsApps\PythonSoftwareFoundatio`n.Python.3.9_3.9.1776.0_x64__qbz5n2kfra8p0\lib\_strptime.py", line 349, in _strptime
-	#     raise ValueError("time data %r does not match format %r" %
-	# ValueError: time data '08/31/2021' does not match format '%a %b %d %H:%M:%S %Y'
 
 		start = time.strptime(start_str, "%m/%d/%Y")
 		end = time.strptime(end_str,"%m/%d/%Y")
@@ -238,6 +273,7 @@ class HedgeFund:
 		# self, date, senders : dict, recipients : dict, id)
 		# below is jamies code, idk what its for
 		mutex.release()
+		
 		return Smart_Contract(time.asctime(), {"sender": investment}, {"HedgeFund": investment})
 		
 CONST_HEDGEFUND_SLEEP_TIME = 5 # seconds

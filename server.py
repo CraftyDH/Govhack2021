@@ -129,7 +129,6 @@ async def get_unsigned_transactions(request):
     finally:
         return web.Response(text=ret_json, content_type="application/json")
 
-
 @routes.post('/get_balance')
 async def get_balance(request):
     username = (await request.post())["username"]
@@ -145,14 +144,40 @@ async def get_balance(request):
         "status" : "Failed. User not found / Balance not found"
     }
 
-@routes.post('/get_usernames')
+@routes.get('/get_usernames')
 async def get_usernames(request):
     usernames = users.get_usernames()
-    if usernames == False:
+    if not usernames:
         return web.json_response({"status": "failed getting usernames"})
     ret_json = safe_str({"status": "success", "usernames": usernames})
     return web.Response(text=ret_json, content_type="application/json")
 
+@routes.get('/{username}/get_all_contracts/{pending}')
+async def get_all_contracts(request):
+    username = request.match_info["username"]
+    
+    # pending
+    # active
+
+    contracts = t.get_all_contracts(username, request.match_info["pending"])
+    ret_json = [[
+        ", ".join(map(lambda i: find_user_private_key(i)[0]["username"]), n.senders),
+        ", ".join(map(lambda i: find_user_private_key(i)[0]["username"]), n.recipients),
+        n.amount,
+        n.hash,
+        n.tax,
+        n.end_time
+    ] for n in contracts]
+    """columns: [
+        { title: "Sender" },
+        { title: "Recipient" },
+        { title: "Amount" },
+        { title: "Hash" },
+        { title: "Tax" },
+        { title: "Time" },
+    ], """
+    ret_json = safe_str({"data": ret_json})
+    return web.Response(text=ret_json, content_type="application/json")
 
 # parameters: {
 #   "date": "Sun Jun 20 23:21:05 1993",
@@ -188,16 +213,25 @@ async def post_smart_contract(request):
     
     # return {'status': "failed creating contract"}
 
-
-@routes.post('/get_all_contracts')
+"""
+@routes.post('/{user}/get_all_contracts/{pending}')
 async def get_all_contracts(request): # add error checking
-    contracts = b.get_all_contracts()
+    contracts = b.get_all_contracts(request.match_info["user"])
+
+    if request.match_info["pending"] == "pending":
+        ##
+        pass
+    elif request.match_info["pending"] == "active":
+        ##
+        pass
+
     if contracts:
-        ret_json = safe_str({"status": "success", "contracts": contracts})
+        ret_json = safe_str({"status": "success", "data": contracts})
         return web.Response(text=ret_json, content_type="application/json")
     return web.Response(text={
         "status": "failed getting contracts"
     })
+"""
 
 @routes.post('/sign_contract')
 async def sign_transaction(request):
