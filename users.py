@@ -11,6 +11,7 @@ import base58
 mutex = Lock()
 
 CONST_USER_JSON = "./json/user.json"
+
 # #add mutexes here
 # def append_json(user_data, fp):
 #     mutex.acquire()
@@ -148,7 +149,7 @@ def find_user_private_key(private_key):
 
 # Calculating user value
 
-def get_user_worth_from_transactions(user : dict) -> float:
+def get_user_worth_from_transactions(user : dict) -> float: # This is used for the periodic but unpredictable hedge Fund transfers as well as general transfers
     accumulated_balance = 0
     for block in blockchain.chain:
         for transaction in block:
@@ -156,27 +157,20 @@ def get_user_worth_from_transactions(user : dict) -> float:
                 accumulated_balance -= transaction.amount
             elif (transaction.recipient == user):
                 accumulated_balance += transaction.amount
-
     return accumulated_balance
 
-def get_user_worth_from_smart_contracts_periodic(user: dict) -> float:
+def get_user_worth_from_smart_contracts_periodic(user: dict) -> float: # This is used for static, fixed transfer dates
     for block in blockchain.contracts_chain:
         for contract in block.transactions:
-            if type(contract) == Time_Contract: # Circular dependency IDK how to fix
+            if type(contract) == Time_Contract:
                 if (user["public_key"] in contract.senders):
-                    contribution_amount = contract.senders[user["public_key"]] * (-1) # Assume the numbers 
+                    contribution_amount = contract.senders[user["public_key"]] * (-1)
                 elif (user["public_key"] in contract.recipients):
                     contribution_amount = contract.recipients[user["public_key"]]
                 return contract.get_num_previous_transactions() * contribution_amount
 
-# def get_user_worth_from_smart_contracts_threshold(self, user: dict) -> float:
-# 	for block in blockchain.contracts_chain:
-# 		for contract in block.transactions: # time, withdrawals, stop_limit 
-# 			if (type(contract) == Stop_Limit):
-# 				pass
-
 def get_user_worth(user: dict) -> float:
-    return round(get_user_worth_from_transactions(user) + get_user_worth_from_smart_contracts_periodic(user), 2)# + get_user_worth_from_smart_contracts_threshold(user), 2)
+    return round(get_user_worth_from_transactions(user) + get_user_worth_from_smart_contracts_periodic(user), 2)
 
 def get_user_transactions(user : dict):
     for block in blockchain.chain:

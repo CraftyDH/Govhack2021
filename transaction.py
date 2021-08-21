@@ -1,10 +1,12 @@
+from aiohttp.web import HostSequence
 import users
 from block import blockchain
 from hashlib import sha256
-import time
+import time, random
+import threading
 
 CONST_ID = 0
-
+CONST_HEDGEFUND_SLEEP_TIME = 5 # seconds
 class Transaction:
 	def __init__(self, sender, recipient, amount, hash=0): #user dictionary
 		self.sender = users.find_user_private_key(sender)
@@ -49,6 +51,7 @@ def create_transaction_no_validation(sender, recipient, amount):
 	return t
 
 
+
 #(self, date, senders, recipients, condition_argument, id, transaction_timestamps, contract_length)
 def create_contract(date, amount: int, sender_public_key : dict, recipient_public_key : dict, condition_type, condition_arguments): # Add an Amount
 	global CONST_ID
@@ -73,7 +76,7 @@ class Smart_Contract:
 		self.id = id
 		self.amount = 0
 		#find net value of SC
-		for k, v in self.senders:
+		for v in self.senders.values():
 			self.amount += v
 		self.validate()
 
@@ -81,11 +84,11 @@ class Smart_Contract:
 	def load_json(self, json):
 		pass # he is creating a new constructor, if you go to 
 
-	def validate(self):
+	def validate(self): # Flag for Jonte to fix probs tonnes of bugs idk @Jonte
 		#find user object
 		nusers = users.load_user_json()
 		self.senderArr = []
-		for senderK, senderV in self.senders:
+		for senderK in self.senders.keys():
 			for n in nusers:
 				if n["public_key"] == senderK.public_key:
 					self.senderArr.append(n)
@@ -93,7 +96,7 @@ class Smart_Contract:
 			else:
 				raise Exception("sender not found")
 		self.recipientArr = []
-		for recipientK, recipientV in self.recipients:
+		for recipientK in self.recipients.keys():
 			for n in nusers:
 				if n["public_key"] == recipientK.public_key:
 					self.recipientArr.append(n)
@@ -117,29 +120,6 @@ class Smart_Contract:
 	def sign_request(self):
 		blockchain.add_SC(self) #! WHAT IS ADD_
 		return True
-
-	def query_condition(self):
-		#time.asctime([t]) has format of Sun Jun 20 23:21:05 1993'
-		if self.condition_type == "time":
-			if self.condition_argument <= time.asctime():
-				self.execute()
-				return {"status": "Smart Contract Fulfilled"}
-			else:
-				return {"status": "Smart Contract Not Fulfilled"}
-
-		elif self.condition_type == "withdrawl":
-			if self.condition_argument == "salary":
-				pass
-			elif self.condition_argument == "lumpsum":
-				pass
-
-		# Hedgefund specific
-		elif self.condition_type == "stop_limit":
-			#self.condition_argument ->	the number to stop at, the number should be derived from a function which slowly increases tan int which is supposed to be an investment account
-			pass
-		# Edge Case
-		else:
-			raise Exception("Other query condition not implemented: " + str(self.condition_type))
 
 	def sign(self, privkey):
 		for k in self.validation_keys.keys():
@@ -169,7 +149,7 @@ class Time_Contract(Smart_Contract):
 	def __init__(self, date, amount, senders, recipients, condition_argument : dict, id):
 		Smart_Contract.__init__(self, date, amount, senders, recipients, id)
 		self.transaction_timestamps = Time_Contract.create_transaction_dates(condition_argument)
-		
+
 	@staticmethod
 	def create_transaction_dates(dates: dict) -> list:
 		start = dates['start_date']
@@ -191,15 +171,41 @@ class Time_Contract(Smart_Contract):
 		amount = 0
 		for i in timestamps:
 			if i < now:
-				amount+=1
+				amount += 1
 		return amount
-		
+
+
 
 class HedgeFund:
 	def __init__(self):
-		users.create_user("HedgeFund","hedgefund")
+		users.create_user("HedgeFund", "hedgefund")
 		self.wallet = users.get_user_worth()
+		self.invested_users = {}
 
-	def invest(self):
-		pass
+	def invest(self): # once we call invest, it will iterate through all the invested
+		t = threading.Thread(target=self.increment_user_investment)
+		t.start()
+
+	def increment_user_investment(self, user): # Run this method like every 5 mins or something
+		while True:
+			time.sleep(CONST_HEDGEFUND_SLEEP_TIME)
+			for user in self.invested_users.keys():
+				self.invested_users[user][0] += random.randrange(50)
+				if self.invested_users[user][1] <= self.invested_users[user][0]: # invested_users = {"public_key": [invested_amount, limit]}
+					# Give the money back to the user
+					pass
+
+	def smart_invest(self, user, investment, limit) -> Smart_Contract:
+		global CONST_ID
+		if (user["public_key"] in self.invested_users):
+			self.invested_users[user["public_key"]][0] += investment # If the user already exists in the invested users, we assume they want to invest more money into the hedge fund
+		else:
+			self.invested_users[user["public_key"]] = [investment, limit] # If they don't exist, then we assume they are a new investor and add them to the dict
+		# self, date, senders : dict, recipients : dict, id)
+		CONST_ID += 1
+		return Smart_Contract(time.asctime(), {"sender": investment}, {"hedgefund": investment}, CONST_ID - 1)
+
+# class Bank(HedgeFund):
+# 	def __init__(self):
+# 		HedgeFund.__init__() # Define stuff in like comments
 		
