@@ -2,7 +2,7 @@ from aiohttp import web
 import json
 
 import block
-# import b = block.blockchain
+b = block.blockchain
 import transaction
 from safe_json import safe_str
 import users
@@ -10,6 +10,7 @@ import users
 routes = web.RouteTableDef()
 
 routes.static('/static', 'website/static')
+routes.static('/dashboard', 'website/dashboard')
 
 @routes.get('/')
 async def root(request):
@@ -20,7 +21,7 @@ async def root(request):
         )
 
 @routes.get('/anim.html')
-async def user(request):
+async def anim(request):
     with open("website/anim.html") as f:
         return web.Response(
             text=f.read(),
@@ -28,7 +29,7 @@ async def user(request):
         )
 
 @routes.get('/login')
-async def user(request):
+async def login(request):
     with open("website/login.html") as f:
         return web.Response(
             text=f.read(),
@@ -37,22 +38,30 @@ async def user(request):
 
 @routes.get('/chain')
 async def chain(request):
-    bc = b
+    if b == None: return web.Response(text=safe_str({"status": "block does not exist"}))
+    ret_json = safe_str({"status": "success", "blockchain": b})
     return web.Response(text=ret_json)
 
 @routes.get('/block/{index}')
 async def block(request):
     index = request.match_info["index"]
-    # block = b.get_block(index)
-    # ret_json = safe_str(block)
-    return web.json_responce(index)
+    try:
+        int_index = int(index)
+        block = b.get_block(int_index)
+        ret_json = safe_str({"status": "success", "block": block})
+        return web.Response(
+            text=ret_json,
+            content_type = "application/json"
+        )
+    except ValueError:
+        return web.json_response({"status": "failed block request"})
 
 @routes.get('/mine')
 async def mine(request):
-    #ret = b.mine()
-    #ret_json = safe_str(ret)
-    #return web.Response(text=ret_json)
-    return web.Response(text = "ret_json")
+    ret = b.mine()
+    ret_json = safe_str(ret)
+    return web.Response(text=ret_json, context_type="application/json")
+
 @routes.post('/login')
 async def account(request):
     data = await request.post()
@@ -81,7 +90,14 @@ async def delete_account(request):
 async def create_transaction(request):
     data = await request.post()
     trans = transaction.create_transaction(data["sender_private_key"], data["recipient_public_key"], data["amount"])
+    if trans["status"] != "success":
+        return web.json_response(trans)
+    ret_json = safe_str({"status": "success", "transaction": trans})
     return web.json_response(trans)
+
+@routes.post('/get_local_transactions')
+async def get_transaction():
+    pass
 
 app = web.Application()
 app.add_routes(routes)

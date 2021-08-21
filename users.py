@@ -41,11 +41,13 @@ def create_user(username: str, password: str):
     if " " in username or len(username) < 5:
         return {"status": "invalid username"}
 
+    if len(password) <= 5 or len(password) >= 255:
+        return {"status": "invalid password"}
+
     private_key = sha256(base58.b58encode(str(username).encode("ascii"))).hexdigest()
     public_key = str(sha256(sha256(private_key.encode()).hexdigest().encode()).hexdigest())
 
-    file = open(CONST_USER_JSON)
-    users = json.load(file)
+    users = load_user_json()
     for user in users:
         if (user["username"] == username):
             return {"status": "user exists"}
@@ -65,7 +67,7 @@ def create_user(username: str, password: str):
 # Modifying the JSON database
 def modify_password(username: str, password: str, new_password: str) -> bool:
     users = load_user_json()
-    if len(password) <= 8 or len(password) >= 255:
+    if len(password) <= 5 or len(password) >= 255:
         return {"status": "invalid password"}
 
     for user in users:
@@ -89,9 +91,7 @@ def delete_user(username: str, password : str) -> bool:
     return {"status": "no user found"}
 
 
-# Handling Login's and Transactions
-
-def login(username: str, password: str): # -> User: # this is the same process as get_user?
+def login(username: str, password: str):
     users = load_user_json()
     for user in users:
         if user["username"] == username and user["password"] == None:
@@ -104,9 +104,21 @@ def login(username: str, password: str): # -> User: # this is the same process a
                     "password": user["password"],
                     "public_key": user["public_key"],
                     "private_key": user["private_key"],
-                    "local_ledger": user["local_ledger"]
                 }
             }
         elif user["username"] == username:
             return {"status": "incorrect password"}
     return {"status": "no user found"}
+
+def hash_key(key):
+    return sha256(key.encode()).hexdigest()
+    
+
+def get_private_public_keys():
+    users = load_user_json()
+    return [{ 
+            "hashed_public_key": hash_key(n["public_key"]), 
+            "hashed_private_key": hash_key(n["private_key"]),
+            "user": n
+        } for n in users
+    ]

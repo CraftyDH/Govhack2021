@@ -1,54 +1,99 @@
 import users
 from block import blockchain
+from hashlib import sha256
+import time
 
 class Transaction:
-	def __init__(self, sender, recipient, amount): #user dictionary
+	def __init__(self , sender, recipient, amount, hash=0): #user dictionary
 		self.sender = sender
 		self.recipient = recipient
 		self.amount = amount
+		self.time = time.asctime()
+		if hash == 0:
+			self.hash = twelve_chars(self.amount)+sha256(self.recipient.publicKey.encode()).hexdigest()+sha256(self.sender.privateKey).encode().hexdigest()
+		else:
+			self.hash = hash
+		self.tax = blockchain.tax_rate * self.amount
 
-	# Since a blockchain holders wallet is technically made up of the previous transactions to such wallet,
-	# when transacting, a sender is really sending a previously received transaction of greater value 
-	# (or multiple of smaller value to add up to the desired amount) than the amount which they desire to send to another wallet. 
 	def validate_transaction(self, user):
 		net_worth = blockchain.get_user_worth(user) #this here
-		total = 0
-		
-		# Sort ledger values from higher to lower in order to find sum of transactions as efficiently as possible.
-		for x in self.sender.ledger.sort(reverse=True):
-			if total < self.amount:
-				total += x
-		if total < self.amount: 
+		if net_worth - self.amount < self.amount: 
 			return {"status" : "Insufficient Funds"}
-		transAmount = total
+		# transaction = twelve_chars(self.amount)+sha256(self.recipient.publicKey.encode()).hexdigest()+sha256(self.sender.privateKey).encode().hexdigest()
+		blockchain.unconfirmed_transactions.append(self.hash)
+		return {"status" : "success"}
 
-		# Ledger Logic i.e(neutralize input, send recipients output, give sender change)
-		self.sender.ledger.append(0 - transAmount)
-		self.recipient.ledger.append(self.amount)
-		self.sender.ledger.append(transAmount-self.amount)
-		
-		sigScript = self.sender.privateKey + self.sender.publicKey + self.recipient.publicKeyHash
-		transaction = self.recipient.publicKey + self.sender.privateKey + sigScript + str(self.amount)
-
-		blockchain.unconfirmed_transactions.append(transaction)
-		return  {"status" : "Transactions Successfully created"}
-
-
+def twelve_chars(amount):
+	# each hash is ed in the 64 characters long, so total msg length is 140 characters #? maybe end instead of ed
+	return "0"*(12-len(str(amount))) + str(amount)
+ 
 def create_transaction(self, sender, recipient, amount): 
 	t = Transaction(sender, recipient, amount)
 	return t.validate_transaction()
 
-#create_contract (with sender_private_key, recipient_public_key, date_closed, amount_in, amount_out)
-def create_contract(self, sender_private_key, recipient_public_key, date_closed, amount_in, amount_out):
-	pass
+def create_transaction_no_validation(self, sender, recipient, amount):
+	return Transaction(sender, recipient, amount)
 
-#this file is a mess and we need jamie on it ASAP
-	#cause it's missing blockchain implementation. That is what needs to be in this file
-	#handle local ledgers as well when you change this file
+#create_contract (with sender_public_key, recipient_public_key, date_closed, amount_in, amount_out)
+def create_contract(self, sender_public_key, recipient_public_key, date_closed, amount_in, amount_out): #! amount_in not passed, JONTE there has been a change here
+	sc = Smart_Contract(time.asctime(), sender_public_key, recipient_public_key, "time", amount_out) #! date passed as -1
+	return sc.validate_transaction()
 
-#don't forget to add functions that keep getting deleted for the server api
-
-#also add smart contracts here as well
 class Smart_Contract:
-	def __init__(self, sender):
-		return
+	# didc format -> { publickey : amount_contributed }
+	# senders -> {"node1":25, "node2":30}
+	# recipients -> {"node3":55}
+	# amount -> 55
+	def __init__(self, date, senders, recipients, condition_type, condition_argument):
+		self.date = date #?is date necersarry?
+		self.senders = senders #! I have passed senders and receiver ids rather than the dictionaries themselves. 
+		self.recipients = recipients
+		self.amount = 0
+		self.condition_type = condition_type
+		self.condition_argument = condition_argument
+
+		for k, v in self.senders:
+			self.amount += v
+		for k, v in self.recipients:
+			self.amount += v	
+
+		#find user object
+		nusers = users.load_user_json()
+		user = None
+		for senderK, senderV in self.senders:
+			for n in nusers:
+				if n.public_key == senderK.public_key:
+					user = n
+					break
+			else: 
+				raise Exception("user not found")
+		blockchain.get_user_worth(user)
+
+
+	def query_condition(self):
+		#time.asctime([t]) has format of Sun Jun 20 23:21:05 1993'
+		if self.condition_type == "time":
+			if self.condition_argument <= time.asctime():
+				return {"status": "Smart Contract Fulfilled"}
+			else:
+				return {"status": "Smart Contract Not Fulfilled"}
+
+		elif self.condition_type == "withdrawl":
+			if self.condition_argument == "salary":
+				pass
+			elif self.condition_argument == "lumpsum":
+				pass
+
+		# Hedgefund specific
+		elif self.condition_type == "stop_limit":
+			#self.condition_argument ->	the number to stop at, the number should be derived from a function which slowly increases tan int which is supposed to be an investment account
+			pass
+		# Edge Case
+		else:
+			raise Exception("Other query condition not implemented: " + str(self.condition_type))
+
+	def execute():
+		pass
+
+	def release():
+		pass

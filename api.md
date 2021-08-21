@@ -18,6 +18,7 @@ return:
 }
 ## Failure
 {"status": "invalid username"}
+{"status": "invalid password"}
 {"status": "user exists"} // Already exists
 
 ## Modify Password
@@ -68,3 +69,80 @@ password: String
 {"status": "user deleted"}
 {"status": "incorrect password"}
 {"status": "no user found"}
+
+# Get Blockchain
+GET /chain
+
+## Success
+{
+  "status": "success",
+  "blockchain": {
+    "chain": {
+        nextblock,
+        current
+    },
+    "unconfirmed-transactions": [{
+      "sender": "9049da8f7b8f8f7317df47ab0ead1180d612888153b95b58efa8ab5e4723c09f",
+      "recipient": "f876c0edf79b72d3fc6fa0199f396d7c4eb55ea4a20ec6df091bfc73489f2c86",
+      "amount": 200
+    }, ...]
+  }
+}
+
+## Failure
+{"status": "block does not exist"}
+
+# Get Block
+GET /block/{id}
+
+#! NOTE TRANSACTIONS WILL NOW BE PASSED AS A HASH
+
+## Success
+{
+  "status": "success",
+  "block": {
+    "index": "15",
+    "transactions":{
+      "sender": "9049da8f7b8f8f7317df47ab0ead1180d612888153b95b58efa8ab5e4723c09f",
+      "recipient": "f876c0edf79b72d3fc6fa0199f396d7c4eb55ea4a20ec6df091bfc73489f2c86",
+      "amount": 200,
+      "hash": "f7317df47ab0ead1180d61289049da8f7b8f888153b95b58efa8ab5e4723c09f",
+      "time": "Sun Jun 20 23:21:05 1993", #ascii time
+      "tax": 10
+    }, ...],
+    "timestamp": "Sun Jun 20 23:21:05 1993", #ascii time
+    "previous_hash": "f7317df47ab0ead1180d61289049da8f7b8f888153b95b58efa8ab5e4723c09f",
+    "nonce": "339399"
+  }
+}
+
+## Failure
+{"status": "failed block request"}
+
+
+## Transactions
+POST /create_transaction
+HTTP_FORM Params
+sender_private_key: String/Int (hex key)
+password: String
+
+## Success
+self.sender = sender
+		self.recipient = recipient
+		self.amount = amount
+		self.hash = hash
+		self.time = time.asctime()
+{
+  "status": "success",
+  "transaction": {
+    "sender": "9049da8f7b8f8f7317df47ab0ead1180d612888153b95b58efa8ab5e4723c09f",
+		"recipient": "f876c0edf79b72d3fc6fa0199f396d7c4eb55ea4a20ec6df091bfc73489f2c86",
+		"amount": 200,
+		"hash": "f7317df47ab0ead1180d61289049da8f7b8f888153b95b58efa8ab5e4723c09f",
+		"time": "Sun Jun 20 23:21:05 1993", #ascii time
+    "tax": 10
+  }
+}
+
+## Failure
+{"status": "failed to create transaction"}

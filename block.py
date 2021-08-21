@@ -70,7 +70,7 @@ class ChainList:
 	def pop_at(self, index):
 		raise Exception("pop at not implemented yet") #i can't be bothered and it shouldn't come up right?
 	def __str__(self):
-		return "[" + ", ".join(map(str, iter(self))) + "]" #bit unecersarry, as it returns a list anyway lol (but theoretical issues whatever)
+		return "[" + ", ".join(map(str, iter(self))) + "]" # bit unecersarry, as it returns a list anyway lol (but theoretical issues whatever)
 
 class Blockchain: 
 	def __init__(self):
@@ -78,6 +78,7 @@ class Blockchain:
 		self.chain = None #ChainList
 		self.difficulty = 2
 		self.create_genisis()
+		self.tax_rate = .05
 
 	def create_genisis(self):
 		block = Block(0, [], time.time_ns(), "0")
@@ -109,38 +110,32 @@ class Blockchain:
 			return False
 		if not self.is_valid_proof(block, proof):
 			return False
-
 		# we want this to only take the fisrt 50 elements, where the transactions have been sorted by amount
 		self.unconfirmed_transactions = self.unconfirmed_transactions[50:]
-
 		block.hash = proof
 		self.chain.append(block)
-		return 1
+		return True #?what?
 
 	def is_valid_proof(self, block, block_hash):
 		return (block_hash.startswith('0' * self.difficulty) and block_hash == block.compute_hash())
 
 	def mine(self):
-		if self.unconfirmed_transactions == []:
-			return {"status":"No transactions to mine"}
+		if self.unconfirmed_transactions == []: return {"status":"No transactions to mine"}
 		last_block = self.last_block
 		new_block = Block(index=last_block.index + 1,
-							# we want this to only take the fisrt 50 elements, where the transactions have been sorted by amount
-							transactions=self.unconfirmed_transactions[:50],
-							timestamp=time.time_ns(),
-							previous_hash=last_block.hash
+			# we want this to only take the fisrt 50 elements, where the transactions have been sorted by amount
+			transactions=self.unconfirmed_transactions[:50],
+			timestamp=time.time_ns(),
+			previous_hash=last_block.hash
 		)
 		proof = self.proof_of_work(new_block)
 		self.add_block(new_block, proof)
+		return {"status": "success"}
 
-	def get_user_worth(self, user):
-		net_worth = sum[transaction.amount for block in blockchain for transaction in block]
-		for block in blockchain.chain:
-			for transaction in block:
-				if transaction.sender == user or transaction.recipient == user:
-					net_worth += transaction.amount
-		return net_worth
+	def get_user_worth(self, user : dict):
+		return sum([transaction.amount for block in blockchain.chain for transaction in block.transactions if (transaction.sender == user) or (transaction.recipient == user)])
+	
+	def get_user_transactions(self, user : dict):
+		return [transaction.amount for block in blockchain.chain for transaction in block.transactions if (transaction.sender == user) or (transaction.recipient == user)]
 
 blockchain = Blockchain()
-# blockchain.mine()
-# print(blockchain.chain)
