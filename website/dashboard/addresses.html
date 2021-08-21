@@ -3,7 +3,7 @@
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
       <!-- Primary Meta Tags -->
-      <title>GriffinCoin - Transactions</title>
+      <title>GriffinCoin - Addresses</title>
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
       <!-- Favicon -->
       <link rel="apple-touch-icon" sizes="120x120" href="/static/favicons/apple-touch-icon.png">
@@ -64,14 +64,6 @@
    <body>
       <!-- NOTICE: You can use the _analytics.html partial to include production code specific code & trackers -->
       <script>
-         function createGuid()  
-         {  
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxx'.replace(/[xy]/g, function(c) {  
-               var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);  
-               return v.toString(16);  
-            });  
-         } 
-
          //verify the current user credential
          var username = Cookies.get('username');
          var password = Cookies.get('password');
@@ -98,51 +90,6 @@
              },
          });
 
-         Swal.fire({
-           text: 'curl -d "username='+username+'" -x POST /get_user_transactions',
-           icon:'info',
-            showConfirmButton: false,
-          });
-
-          $.ajax({
-            type: "POST",
-            async: true,
-            url: "/get_user_transactions",
-            cache: false,
-            data: {
-               username:username
-            },
-            success: function(result){
-               var status = result.status;
-               if(status != "success"){ //error
-                  Swal.fire('ERR::get_transactions',status,'error');
-                  return;
-               }
-               Swal.close();
-
-               var table = $('#table').DataTable({
-                  responsive: true,
-                  "ajax": '/'+username+'/get_transactions_data',
-                  columns: [
-                     { title: "Sender" },
-                     { title: "Recipient" },
-                     { title: "Amount" },
-                     { title: "Hash" },
-                     { title: "Tax" },
-                     { title: "Time" },
-                     ],
-                  "language": {
-                     "zeroRecords": "Records: NULL",
-                  },
-                  "order": [[ 5, "desc" ]]
-               });
-
-               setInterval( function () {
-                  table.ajax.reload( null, false ); // user paging is not reset on reload
-               }, 5000 );
-            },
-         });
-         
          
          function logout(){
              try{
@@ -154,54 +101,6 @@
              finally{
                  setTimeout(()=>{window.location.href = "/login";},300);
              }
-         }
-
-         function createTransaction(){
-            var sender_private_key = user.private_key;
-            var recipient_public_key = $('#recipient_public_key').val();
-            var transaction_amount = $('#transaction_amount').val();
-
-            Swal.fire({
-               text: 'curl -d "sender_private_key='+sender_private_key+'&recipient_public_key='+recipient_public_key+'&amount='+transaction_amount+'&" -x POST /create_transaction',
-               icon:'info',
-               showConfirmButton: false,
-            });
-            
-            var data= {
-                  sender_private_key:sender_private_key,
-                  recipient_public_key:recipient_public_key,
-                  amount:transaction_amount
-               }
-
-            $.ajax({
-               type: "POST",
-               async: true,
-               url: "/create_transaction",
-               cache: false,
-               data:data,
-               success: function(result){
-                  var status = result.status;
-                  if(status != "success"){ //error
-                        Swal.fire('ERR::create_transaction',status,'error');
-                        return;
-                  }
-                  Swal.close();
-                  Swal.fire({
-                     icon:'success',
-                     html:'<kbd style="color:rgb(51,255,51)">$ ./create_transaction success!</kbd>',
-                  }).then((result) => {
-                     $('#close-transaction').click();
-                  })
-               },
-               error: function(xhr, ajaxOptions, thrownError){
-                  Swal.close();
-                  Swal.fire({
-                     title:xhr.status,
-                     text:JSON.stringify(thrownError,null,2),
-                     icon:'error'
-                  })
-               }
-            });
          }
          
       </script>
@@ -229,7 +128,7 @@
                      <span class="sidebar-text">Dashboard</span>
                   </a>
                </li>
-               <li class="nav-item active">
+               <li class="nav-item">
                   <a href="/dashboard/transactions.html" class="nav-link">
                      <span class="sidebar-icon">
                         <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -250,7 +149,7 @@
                      <span class="sidebar-text">Contracts</span>
                   </a>
                </li>
-               <li class="nav-item">
+               <li class="nav-item active">
                   <a href="/dashboard/addresses.html" class="nav-link">
                      <span class="sidebar-icon">
                         <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -273,52 +172,134 @@
             </ul>
          </div>
       </nav>
-      <div class="modal fade" id="modal-transaction" tabindex="-1" role="dialog" aria-labelledby="modal-transaction" aria-hidden="true">
-         <div class="modal-dialog modal-dialog-centered" role="document">
-             <div class="modal-content">
-                 <div class="modal-header">
-                     <h2 class="h6 modal-title">$ ./new-transaction.sh</h2>
-                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id='close-transaction'></button>
-                 </div>
-                 <div class="modal-body">
-                     <div class="mb-3">
-                        <label for="public_key" class="form-label">$recipient_public_key</label>
-                        <input type="text" class="form-control" id="recipient_public_key" placeholder="$recipient_public_key">
-                     </div>
-                     <div class="mb-3">
-                        <label for="transaction_amount" class="form-label">$amount</label>
-                        <input type="number" class="form-control" id="transaction_amount" placeholder="$amount" value=0>
-                     </div>
-                 </div>
-                 <div class="modal-footer">
-                     <a class="text-decoration-none" style="cursor:pointer" href="javascript:createTransaction()"><kbd>$ ./send.sh</kbd></a>
-                 </div>
-             </div>
-         </div>
-     </div>
-      <main class="content font-monospace" style="min-height:500px;">
+      <main class="content font-monospace" style="min-height:700px;">
          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
             <div class="d-block mb-4 mb-md-0">
                <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
                   <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
                      <li class="breadcrumb-item">User</li>
-                     <li class="breadcrumb-item active" aria-current="page">Transactions</li>
+                     <li class="breadcrumb-item active" aria-current="page">Addresses</li>
                   </ol>
                </nav>
-               <h2 class="h4">All Transactions</h2>
+               <h2 class="h4">Avaliable Addresses</h2>
                <p class="mb-0" id="balance"></p>
             </div>
-            <div class="btn-toolbar mt-5 mb-2 mb-md-0">
+            <!-- just to hold a space makes it looks more organised -->
+            <div class="btn-toolbar mt-5 mb-2 mb-md-0" style="visibility:hidden">
               <a class="text-decoration-none mb-5" href="javascript:void"  data-bs-toggle="modal" data-bs-target="#modal-transaction"><kbd class="hacker">$ ./new-transaction.sh</kbd></a>
+              <small style="margin-left: .5rem;margin-right: .5rem;">/</small>
+              <a class="text-decoration-none mb-5" href="javascript:smartContract()"><kbd class="hacker">$ ./smart-contract.sh</kbd></a>
             </div>
          </div>
          <div class="card card-body shadow border-0 table-wrapper table-responsive">
-            <table class="table table-hover" id="table">
-               
-            </table>
+            <div class="table-responsive">
+               <table class="table table-centered table-nowrap mb-0 rounded">
+                   <thead class="thead-light">
+                       <tr>
+                           <th class="border-0 rounded-start">Recipient</th>
+                           <th class="border-0 rounded-end">Public Key</th>
+                       </tr>
+                   </thead>
+                   <tbody>
+                     <tr>
+                        <td class="border-0">
+                           jason_test1
+                        </td>
+                        <td class="border-0 font-weight-bold">
+                           <kbd>3bb41a90d53a5224907ed91198f9cc8f1c07555d0f4eacb4288585e438560df3</kbd>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border-0">
+                           jason_test10
+                        </td>
+                        <td class="border-0 font-weight-bold">
+                           <kbd>09c11d550b0fb38b59be464af6fd9ad938a0d3a546695c1bd1be491f16466530</kbd>
+                        </td>
+                     </tr>
+                     <tr>
+                        <td class="border-0">
+                           jason_test
+                        </td>
+                        <td class="border-0 font-weight-bold">
+                           <kbd>85dca56a9ebc60637c4cd58cd9a14dc222fe87502d36d8e6cda5e659b7c9de4e</kbd>
+                        </td>
+                     </tr>
+                     <tr>
+                        <td class="border-0">
+                           test_mani
+                        </td>
+                        <td class="border-0 font-weight-bold">
+                           <kbd>cc96e1277f2889ce03936d77b179df7996481ab035b8b8ab0ddb036317d40830</kbd>
+                        </td>
+                     </tr>
+                     <tr>
+                        <td class="border-0">
+                           6767676767
+                        </td>
+                        <td class="border-0 font-weight-bold">
+                           <kbd>ec827549914a097b0ac569150ee5018fcfeb1183eef3988738d61d013e9b9c35</kbd>
+                        </td>
+                     </tr>
+                     <tr>
+                        <td class="border-0">
+                           glubs9
+                        </td>
+                        <td class="border-0 font-weight-bold">
+                           <kbd>043591c0a78ff1f3b6ea3534fa4bdb26a95ccbba87f561182425b83505eb0777</kbd>
+                        </td>
+                     </tr>
+                     <tr>
+                        <td class="border-0">
+                           4552345345345
+                        </td>
+                        <td class="border-0 font-weight-bold">
+                           <kbd>43c418effb05a2563c4c8ccf3d133f06a2a9ec330bd98d55b3736a10b4e391c3</kbd>
+                        </td>
+                     </tr>
+                     <tr>
+                        <td class="border-0">
+                           67676767671
+                        </td>
+                        <td class="border-0 font-weight-bold">
+                           <kbd>ddc1bb4e3e5d628ee29be80ddae848d9bc0d74c1fb6fa4903515557996c592c7</kbd>
+                        </td>
+                     </tr>
+                     <tr>
+                        <td class="border-0">
+                           googler
+                        </td>
+                        <td class="border-0 font-weight-bold">
+                           <kbd>ca631b26d469a62667ac675282ab6959fc433642bd3c6510e02f91da3ad5356e</kbd>
+                        </td>
+                     </tr>
+                     <tr>
+                        <td class="border-0">
+                           dsasdasdadasd
+                        </td>
+                        <td class="border-0 font-weight-bold">
+                           <kbd>275cf5b9c311737317b3f6ebcec48a1ecb49caec5c63efa5f723bb6498d36a3f</kbd>
+                        </td>
+                     </tr>
+                     <tr>
+                        <td class="border-0">
+                           sdasdasdasdaasdsdasd
+                        </td>
+                        <td class="border-0 font-weight-bold">
+                           <kbd>2075bd93281ce6192b86f9292a835f3dc4657cfe875a4c874ab046cf49ddd76b</kbd>
+                        </td>
+                     </tr>
+                     <tr>
+                        <td class="border-0">
+                           jonte
+                        </td>
+                        <td class="border-0 font-weight-bold">
+                           <kbd>b003f76841d4442856a255d17ec436dccb6dffd6a7a19cb7295d40aba3681e18</kbd>
+                        </td>
+                     </tr>
+                   </tbody>
+               </table>
+           </div>
       </main>
-      <script>
-         $('#balance').html('Balance: $'+user.balance);
-      </script>
    </body>
 </html>
