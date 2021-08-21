@@ -28,13 +28,13 @@ body {
 }
 
 #cube2 {
-    left: 500px;
+    left: 200%;
     -webkit-animation: rotatecube 100s infinite;    
     -moz-animation: rotatecube 100s infinite;
 }
 
 #cube3 {
-    right: 500px;
+    right: 200%;
     -webkit-animation: rotatecube 150s infinite;    
     -moz-animation: rotatecube 150s infinite;
 }

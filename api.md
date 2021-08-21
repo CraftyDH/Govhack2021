@@ -150,7 +150,7 @@ username: String
 
 ## Success
 {
-  "status": "success
+  "status": "success"
   "transactions": [
     "transaction": {
     "sender": "9049da8f7b8f8f7317df47ab0ead1180d612888153b95b58efa8ab5e4723c09f",
@@ -165,3 +165,102 @@ username: String
 
 ## Failure
 {"status": "get_user_transactions failed"}
+
+## Unsigned Transactions
+POST /get_unsigned_user_transactions
+HTTP_FORM Params
+username: String
+
+## Success
+{
+  "status": "success" 
+  "transactions": [
+    "transaction": {
+    "sender": "9049da8f7b8f8f7317df47ab0ead1180d612888153b95b58efa8ab5e4723c09f",
+		"recipient": "f876c0edf79b72d3fc6fa0199f396d7c4eb55ea4a20ec6df091bfc73489f2c86",
+		"amount": 200,
+		"hash": "f7317df47ab0ead1180d61289049da8f7b8f888153b95b58efa8ab5e4723c09f",
+		"time": "Sun Jun 20 23:21:05 1993", #ascii time
+    "tax": 10
+    }, ...
+  ]
+}
+
+## Failure
+{"status": "failed getting unsigned user transactions" }
+
+
+## GetUserBalance
+POST /get_balance
+HTTP_FORM Params
+username: String
+
+## Success
+{"status": "success", "balance": 999}
+## Failure
+{"status": "failed getting user balance"}
+
+
+## GetUsernames
+POST /get_usernames
+
+## Success
+{"status": "success", "usernames": [String, ...]}
+## Failure
+{"status": "failed getting usernames"}
+
+
+## Smart Contract
+POST /create_smart_contract
+HTTP_FORM Params
+parameters: {
+  "date": "Sun Jun 20 23:21:05 1993",
+  "senders": [
+    [*Pubkey0*, amount_contributed], ...
+  ],
+  "recipients": [
+    [*Pubkey1*, amount_contributed], ...
+  ],
+  "condition_type": "time" | "withdrawl" | "stop_limit", (one of these 3)
+  "condition_argument": "Sun Jun 20 23:21:05 1993" | ("salary" | "lumpsum") | "6969"
+}
+
+## Success
+{"status": "success"}
+
+## Failure
+{"status": "failed creating contract"}
+
+## Get all contracts
+POST /get_all_contracts
+
+## Success
+{
+  "status": "success", 
+  "contracts": [{
+    "date": "Sun Jun 20 23:21:05 1993",
+    "senders": [
+      [*Pubkey0*, amount_contributed], ...
+    ],
+		"recipients": [
+      [*Pubkey1*, amount_contributed], ...
+    ],
+		"amount": 999,
+		"condition_type": "time" | "withdrawl" | "stop_limit", (one of these 3)
+		"condition_argument": "Sun Jun 20 23:21:05 1993" | ("salary" | "lumpsum") | "6969",
+		"id": 15
+  }, ...]
+}
+
+## Failure
+{"status": "failed getting contracts"}
+
+## Sign Contract
+POST /sign_contract
+HTTP_FORM Params
+
+
+## Success
+{"status": "success"}
+## Failure
+{"status": "failed signing contract"}

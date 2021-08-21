@@ -3,7 +3,7 @@ import json
 
 import block
 b = block.blockchain
-import transaction
+import transaction as t
 from safe_json import safe_str
 import users
 
@@ -89,7 +89,7 @@ async def delete_account(request):
 @routes.post('/create_transaction')
 async def create_transaction(request):
     data = await request.post()
-    trans = transaction.create_transaction(data["sender_private_key"], data["recipient_public_key"], data["amount"])
+    trans = t.create_transaction(data["sender_private_key"], data["recipient_public_key"], data["amount"])
     if trans["status"] != "success":
         return web.json_response(trans)
     ret_json = safe_str({"status": "success", "transaction": trans})
@@ -107,7 +107,6 @@ async def get_transaction(request):
     finally:
         return web.Response(text=ret_json)
 
-
 @routes.post('/get_unsigned_transactions')
 async def get_unsigned_transactions(request):
     try:
@@ -120,7 +119,51 @@ async def get_unsigned_transactions(request):
     finally:
         return web.Response(text=ret_json)
 
-@routes.post('/sign_transaction')
+
+
+
+@routes.post('/get_balance')
+async def get_balance(request):
+    username = (await request.post())["username"]
+    user_worth = b.get_user_worth(username)
+    if (user_worth):
+        ret_json = safe_str({
+            "status": "success",
+            "balance": user_worth
+        })
+        return web.Response(text = ret_json)
+
+    return {
+        "status" : "Failed. User not found / Balance not found"
+    }
+
+@routes.post('/get_usernames')
+async def get_usernames(request):
+    usernames = users.get_usernames()
+    if usernames == False:
+        return web.json_response({"status": "failed getting usernames"})
+    ret_json = safe_str({"status": "success", "usernames": usernames})
+    return web.Response(text=ret_json)
+
+
+@routes.post("/create_smart_contract")
+async def post_smart_contract(request):
+    data = await request.post()["parameters"]
+    if t.create_contract(data): # THIS WON'T WORK IF JAMIE DOESN'T RETURN A BOOl
+        return {"status": "success"}
+    return {'status': "failed creating contract"}
+
+@routes.post('/get_all_contracts')
+async def get_all_contracts(request): # add error checking
+    contracts = b.get_all_contracts()
+    if contracts:
+        ret_json = safe_str({"status": "success", "contracts": contracts})
+        return web.Response(text=ret_json)
+    return web.Response(text={
+        "status": "failed getting contracts"
+    })
+
+@routes.post('/sign_contract')
 async def sign_transaction(request):
     data = await request.post()
     ret_json = ""

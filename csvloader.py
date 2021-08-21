@@ -1,6 +1,6 @@
 import csv
 import string
-from random_username.generator import generate_username
+from random_username.generate import generate_username
 from random import *
 import transaction
 import block
@@ -21,28 +21,26 @@ def generate_user(public_hash):
 
 # block_id, block_hash, block_timestamp, difficulty, transaction_hash, transaction_timestamp, sender, receiver, amount, tax
 
-blocks = {} #blockid: block
+CONST_BLOCKS = {} #blockid: block
 
 with open(csv_file, newline='') as f:
-    read = csv.csvReader(f)
-    next(read)
+    read = csv.reader(f)
     for row in read:
         #make users
         sender = generate_user(row[6])
         reciever = generate_user(row[7])
         #generate transaction
-        #! talk to JAMIE (cool guy/dude)
         trans = transaction.create_transaction_no_validation(sender, reciever, row[8])
-        if row[0] in blocks:
+        if row[0] in CONST_BLOCKS:
             #transaction already exists
-            blocks[row[0]].transactions.append(trans)
+            CONST_BLOCKS[row[0]].transactions.append(trans)
         else:
             #create block
-            blocks[row[0]] = block.Block(-1, [trans], row[5], -1, row[3]) #! tlak to jamie about -1 #4th argument
+            CONST_BLOCKS[row[0]] = block.Block(-1, [trans], row[5], -1, row[3])
     b = block.blockchain
-    blocks_list = [v for k,v in blocks.items()]
-    for n in sorted(blocks_list, key=(lambda n: n.timestamp)): #maybe reversed? (probably not)
-        proof = self.proof_of_work(n)
+    CONST_BLOCKS_list = [v for k,v in CONST_BLOCKS.items()]
+    for n in sorted(CONST_BLOCKS_list, key=(lambda n: n.timestamp)): #maybe reversed? (probably not)
+        proof = b.proof_of_work(n)
         b.add_block(n, proof)
     i = iter(b)
     prev = next(i)
@@ -51,9 +49,6 @@ with open(csv_file, newline='') as f:
         n.compute_hash()
         n.prev_hash = prev.hash
         prev = n
-
-
-    #! put use
     
 print(b)
 
@@ -68,6 +63,4 @@ print(b)
         #amount: 37.142631825483598
         #tax: 0.00067221
         #block == index, transactions, timestamp, previous_hash, nonce=0
-        #index set to negative one until pushed to blockchain #! TALK TO JAMIE
-
-#! talk to jamie about moving pow to be uato claled inside add block
+        #index set to negative one until pushed to blockchain 

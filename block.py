@@ -5,11 +5,13 @@ import time # Look at the bottom of your file please @Jamie
 import itertools
 from hashlib import sha256
 
+CONST_TRANSACTS_IN_BLOCK_NUM = 10
+
 class Block:
 	def __init__(self, index, transactions, timestamp, previous_hash, nonce=0):
 		# values needed for blockheader
 			self.index = index
-			self.transactions = transactions
+			self.transactions = transactions #when used in chainlist it stores contracts not transactions
 			self.timestamp = timestamp
 			self.previous_hash = previous_hash
 			self.nonce = nonce
@@ -75,7 +77,9 @@ class ChainList:
 class Blockchain: 
 	def __init__(self):
 		self.unconfirmed_transactions = []
+		self.unconfirmed_contracts = []
 		self.chain = None #ChainList
+		self.contracts_chain = None #ChainList
 		self.difficulty = 2
 		self.create_genisis()
 		self.tax_rate = .05
@@ -96,7 +100,10 @@ class Blockchain:
 # or get_SC_participants(SC, "recipients")
 #Hey Jamie, could we have a method get_unsigned_transactions(self, username), yea
 	def get_SC_participants(self, SC):
-		return {"senders":SC.senderArr, "recipients":recipientArr}
+		return {"senders":SC.senderArr, "recipients": SC.recipientArr}
+
+	# def sign_contract(self, ...):
+	# 	pass
 
 	def __iter__(self):
 		return iter(self.chain)
@@ -105,14 +112,24 @@ class Blockchain:
 		block = Block(0, [], time.time_ns(), "0")
 		block.hash = block.compute_hash()
 		self.chain = ChainList(block)
+		b2 = Block(0, [], time.time_ns(), "0")
+		b2.hash = b2.compute_hash()
+		self.contracts_chain = ChainList(b2)
 		return 1
 
 	@property
 	def last_block(self):
 		return self.chain.last_block()
 
+	@property
+	def last_contract_block(self):
+		return self.contracts_chain.last_block()
+
 	def get_block(self, index):
 		return self.chain.index_into(index)
+
+	def get_block(self, index):
+		return self.contracts_chain.index_into(index)
 
 	def proof_of_work(self, block):
 		print("POW initiated\nTarget: "+'0'*self.difficulty+"\n")
@@ -132,10 +149,21 @@ class Blockchain:
 			return False
 		if not self.is_valid_proof(block, proof):
 			return False
-		# we want this to only take the fisrt 50 elements, where the transactions have been sorted by amount
 		self.unconfirmed_transactions = self.unconfirmed_transactions[50:]
 		block.hash = proof
 		self.chain.append(block, 0)
+		return True
+
+	def add_contracts_block(self, block, proof):
+		#auto called here
+		previous_hash = self.last_contract_block.hash
+		if previous_hash != block.previous_hash:
+			return False
+		if not self.is_valid_proof(block, proof):
+			return False
+		self.unconfirmed_contracts = self.unconfirmed_contracts[CONST_TRANSACTS_IN_BLOCK_NUM:]
+		block.hash = proof
+		self.contracts_chain.append(block, 0)
 		return True
 
 	def is_valid_proof(self, block, block_hash):
@@ -145,19 +173,35 @@ class Blockchain:
 		if self.unconfirmed_transactions == []: return {"status":"No transactions to mine"}
 		last_block = self.last_block
 		new_block = Block(index=last_block.index + 1,
-			# we want this to only take the fisrt 50 elements, where the transactions have been sorted by amount
-			transactions=self.unconfirmed_transactions[:50],
+			# we want this to only take the first CONST_TRANSACTS_IN_BLOCK_NUM elements, where the transactions have been sorted by amount
+			transactions=self.unconfirmed_transactions[:CONST_TRANSACTS_IN_BLOCK_NUM], 
 			timestamp=time.time_ns(),
-			previous_hash=last_block.hash
+			previous_hash=self.last_block.hash
 		)
 		proof = self.proof_of_work(new_block)
 		self.add_block(new_block, proof)
 		return {"status": "success"}
 
-	def get_user_worth(self, user : dict):
+	def mine(self):
+		if self.unconfirmed_contracts == []: return {"status":"No contracts to mine"}
+		last_block = self.last_contract_block
+		new_block = Block( 
+			index=self.last_contract_block.index + 1,			
+			transactions=self.unconfirmed_contracts[:CONST_TRANSACTS_IN_BLOCK_NUM], # we want this to only take the first CONST_TRANSACTS_IN_BLOCK_NUM elements, where the transactions have been sorted by amount
+			timestamp=time.time_ns(),
+			previous_hash=self.last_contract_block.hash
+		)
+		proof = self.proof_of_work(new_block)
+		self.add_contracts_block(new_block, proof)
+		return {"status": "success"}
+
+	def get_user_worth(self, user : dict) -> float:
 		return sum([transaction.amount for block in blockchain.chain for transaction in block.transactions if (transaction.sender == user) or (transaction.recipient == user)])
 	
 	def get_user_transactions(self, user : dict):
 		return [transaction.amount for block in blockchain.chain for transaction in block.transactions if (transaction.sender == user) or (transaction.recipient == user)]
+
+	def get_all_contracts(self):
+		return [contract for block in blockchain.contracts_chain for contract in block.transactions]
 
 blockchain = Blockchain()

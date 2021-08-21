@@ -11,15 +11,15 @@ mutex = Lock()
 
 CONST_USER_JSON = "./json/user.json"
 
-#add mutexes here
-def append_json(user_data, fp):
-    mutex.acquire()
-    with open(fp, "r+") as f:
-        data = json.load(f)
-        data.append(user_data)
-        f.seek(0)
-        safe_dump(data, f)
-    mutex.release()
+# #add mutexes here
+# def append_json(user_data, fp):
+#     mutex.acquire()
+#     with open(fp, "r+") as f:
+#         data = json.load(f)
+#         data.append(user_data)
+#         # f.seek(0)
+#         safe_dump(data, f)
+#     mutex.release()
 
 def modify_json(new_data, fp):
     mutex.acquire()
@@ -27,7 +27,6 @@ def modify_json(new_data, fp):
         # f.seek(0)
         safe_dump(new_data, f)
     mutex.release()
-
 
 def load_user_json() -> dict:
     mutex.acquire() #mutex so no reading at the same time as writing
@@ -44,7 +43,7 @@ def create_user(username: str, password: str, public_key = None):
         return {"status": "invalid username"}
 
     if len(password) <= 5 or len(password) >= 255:
-        return {"status": "invalid password"}
+        return {"status": "1invalid password"}
 
     private_key = sha256(base58.b58encode(str(username).encode("ascii"))).hexdigest()
 
@@ -62,11 +61,22 @@ def create_user(username: str, password: str, public_key = None):
         "public_key": public_key,
         "private_key": private_key,
     }
-    append_json(newuser, CONST_USER_JSON)
+    users.append(newuser)
+
+    modify_json(users, CONST_USER_JSON)
     return {
         "status": "success",
         "user": newuser
     }
+
+def get_usernames():
+    usernames = []
+    users = load_user_json()
+    for user in users:
+        if user["username"] not in usernames:
+            usernames.append(user["username"])
+    return usernames if usernames else False
+
 
 # Modifying the JSON database
 def modify_password(username: str, password: str, new_password: str) -> bool:
