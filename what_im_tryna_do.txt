@@ -1,0 +1,5 @@
+1. Smart contracts
+2. save blockchain
+4. load csv
+3. done?
+6. video

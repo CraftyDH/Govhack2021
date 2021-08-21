@@ -64,11 +64,18 @@
    <body>
       <!-- NOTICE: You can use the _analytics.html partial to include production code specific code & trackers -->
       <script>
+         function createGuid()  
+         {  
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxx'.replace(/[xy]/g, function(c) {  
+               var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);  
+               return v.toString(16);  
+            });  
+         } 
+
          //verify the current user credential
          var username = Cookies.get('username');
          var password = Cookies.get('password');
          var user;
-         var data;
          
          if(!username || !password) logout();
          
@@ -97,40 +104,43 @@
             showConfirmButton: false,
           });
 
-         $.ajax({
-             type: "POST",
-             async: true,
-             url: "/get_user_transactions",
-             cache: false,
-             data: {
-                 username:username
-             },
-             success: function(result){
-               result =  JSON.parse(result);
-                 var status = result.status;
-                 if(status != "success"){ //error
-                     Swal.fire('ERR::get_transaction',status,'error');
-                     return;
-                 }
-                 Swal.close();
-                 data = result.transactions;
+          $.ajax({
+            type: "POST",
+            async: true,
+            url: "/get_user_transactions",
+            cache: false,
+            data: {
+               username:username
+            },
+            success: function(result){
+               var status = result.status;
+               if(status != "success"){ //error
+                  Swal.fire('ERR::get_transactions',status,'error');
+                  return;
+               }
+               Swal.close();
 
-                  $('#table').DataTable({
-                    responsive: true,
-                    data:data,
-                    columns: [
-                        { title: "Receiver" },
-                        { title: "Amount" },
-                        { title: "Hash" },
-                        { title: "Tax" },
-                        { title: "Time" },
-                      ],
-                      "language": {
-                          "zeroRecords": "Records: NULL",
-                      },
-                      
-                  });
-             },
+               var table = $('#table').DataTable({
+                  responsive: true,
+                  "ajax": '/'+username+'/get_transactions_data',
+                  columns: [
+                     { title: "Sender" },
+                     { title: "Recipient" },
+                     { title: "Amount" },
+                     { title: "Hash" },
+                     { title: "Tax" },
+                     { title: "Time" },
+                     ],
+                  "language": {
+                     "zeroRecords": "Records: NULL",
+                  },
+                  "order": [[ 5, "desc" ]]
+               });
+
+               setInterval( function () {
+                  table.ajax.reload( null, false ); // user paging is not reset on reload
+               }, 5000 );
+            },
          });
          
          
@@ -157,18 +167,19 @@
                showConfirmButton: false,
             });
             
+            var data= {
+                  sender_private_key:sender_private_key,
+                  recipient_public_key:recipient_public_key,
+                  amount:transaction_amount
+               }
+
             $.ajax({
                type: "POST",
                async: true,
                url: "/create_transaction",
                cache: false,
-               data: {
-                  sender_private_key:sender_private_key,
-                  recipient_public_key:recipient_public_key,
-                  amount:transaction_amount
-               },
+               data:data,
                success: function(result){
-                  result =  JSON.parse(result);
                   var status = result.status;
                   if(status != "success"){ //error
                         Swal.fire('ERR::create_transaction',status,'error');
@@ -176,8 +187,14 @@
                   }
                   Swal.close();
                   Swal.fire({
-                     text:JSON.stringify(result,null,2),
-                     icon:'success'
+                     icon:'success',
+                     html:'<kbd style="color:rgb(51,255,51)">$ ./create_transaction success!</kbd>',
+                  }).then((result) => {
+                     if (result.isConfirmed) {
+                        new bootstrap.Modal($('#modal-transaction'), {
+                           keyboard: false
+                        }).hide();
+                     } 
                   })
                },
                error: function(xhr, ajaxOptions, thrownError){
@@ -265,7 +282,7 @@
                         </div>
                         <div class="mb-3">
                            <label for="transaction_amount" class="form-label">$amount</label>
-                           <input type="number" class="form-control" id="transaction_amount" placeholder="$amount">
+                           <input type="number" class="form-control" id="transaction_amount" placeholder="$amount" value=0>
                         </div>
                     </div>
                     <div class="modal-footer">

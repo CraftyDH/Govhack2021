@@ -4,6 +4,7 @@ import random
 import time # Look at the bottom of your file please @Jamie
 import itertools
 from hashlib import sha256
+import safe_json
 
 CONST_TRANSACTS_IN_BLOCK_NUM = 10
 
@@ -20,8 +21,9 @@ class Block:
 	def compute_hash(self): # Construct block header in order to hash it
 		self.trans = ''
 		block_header = ""
+		#self.trans = sum([str(x.hash) for x in self.transactions])
 		for x in self.transactions:
-			self.trans += x #transactions is a list of strings
+		 	self.trans += str(x.hash) #transactions is a list of strings?
 		block_header = self.previous_hash + self.trans + str(self.timestamp) + str(self.nonce)
 		self.hash = sha256(block_header.encode()).hexdigest()
 		return self.hash
@@ -139,7 +141,7 @@ class Blockchain:
 		while not compute_hash.startswith('0'*self.difficulty):
 			block.nonce += 1
 			compute_hash = block.compute_hash()
-			print("Nonce: "+str(block.nonce)+"\nHash: "+str(compute_hash)+"\n"+"="*(6+len(str(compute_hash))))
+			print("Nonce: "+str(block.nonce)+"\nHash: "+str(compute_hash)+"\n"+"="*(len(str(compute_hash))))
 		return compute_hash
 
 	def add_block(self, block, proof):
@@ -169,8 +171,10 @@ class Blockchain:
 	def is_valid_proof(self, block, block_hash):
 		return (block_hash.startswith('0' * self.difficulty) and block_hash == block.compute_hash())
 
-	def mine(self):
-		if self.unconfirmed_transactions == []: return {"status":"No transactions to mine"}
+	def mine_transactions(self):
+		print("mine transactions called")
+		if self.unconfirmed_transactions == []: 
+			return {"status":"No transactions to mine"}
 		last_block = self.last_block
 		new_block = Block(index=last_block.index + 1,
 			# we want this to only take the first CONST_TRANSACTS_IN_BLOCK_NUM elements, where the transactions have been sorted by amount
@@ -182,19 +186,25 @@ class Blockchain:
 		self.add_block(new_block, proof)
 		return {"status": "success"}
 
-	def mine(self):
+	def mine_contracts(self):
 		if self.unconfirmed_contracts == []: return {"status":"No contracts to mine"}
 		last_block = self.last_contract_block
 		new_block = Block( 
-			index=self.last_contract_block.index + 1,			
+			index=self.last_block.index + 1,			
 			transactions=self.unconfirmed_contracts[:CONST_TRANSACTS_IN_BLOCK_NUM], # we want this to only take the first CONST_TRANSACTS_IN_BLOCK_NUM elements, where the transactions have been sorted by amount
 			timestamp=time.time_ns(),
-			previous_hash=self.last_contract_block.hash
+			previous_hash=self.last_block.hash
 		)
 		proof = self.proof_of_work(new_block)
 		self.add_contracts_block(new_block, proof)
 		return {"status": "success"}
 
+	def add_transaction(self, trans):
+		self.unconfirmed_transactions.append(trans)
+
+	# smart contract format -> { publickey : amount_contributed }
+	# senders -> {"node1":25, "node2":30}
+	# recipients -> {"node3":55}
 	def get_user_worth(self, user : dict) -> float:
 		return sum([transaction.amount for block in blockchain.chain for transaction in block.transactions if (transaction.sender == user) or (transaction.recipient == user)])
 	
@@ -205,3 +215,11 @@ class Blockchain:
 		return [contract for block in blockchain.contracts_chain for contract in block.transactions]
 
 blockchain = Blockchain()
+
+"""
+BLOCK_JSON_FILE = "../json/block.json"
+def store_chain():
+	safe_dump(blockchain, BLOCK_JSON_FILE)
+def load_chain():
+	json_in = 
+"""

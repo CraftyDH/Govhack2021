@@ -6,19 +6,24 @@ import time
 Const_ID = 0
 
 class Transaction:
-	def __init__(self , sender, recipient, amount, hash=0): #user dictionary
-		self.sender = sender
-		self.recipient = recipient
-		self.amount = amount
+	def __init__(self, sender, recipient, amount, hash=0): #user dictionary
+		self.sender = users.find_user_private_key(sender)
+		self.recipient = users.find_user_public_key(recipient)
+		self.amount = int(amount)
 		self.time = time.asctime()
 		if hash == 0:
-			self.hash = twelve_chars(self.amount)+sha256(self.recipient.publicKey.encode()).hexdigest()+sha256(self.sender.privateKey).encode().hexdigest()
+			# self.recipient.encode() is encoding ID instead of public key 
+			part_1 = str(twelve_chars(self.amount))
+			part_2 = str(sha256(self.recipient["public_key"].encode()).hexdigest())
+			part_3 = str(sha256(self.sender["private_key"].encode()).hexdigest())
+			self.hash = sha256((part_1 + part_2 + part_3).encode()).hexdigest()
 		else:
 			self.hash = hash
 		self.tax = blockchain.tax_rate * self.amount
 
-	def validate_transaction(self, user):
-		net_worth = blockchain.get_user_worth(user) #this here
+	def validate_transaction(self):
+		net_worth = blockchain.get_user_worth(self.sender) #this here
+		# net_worth = 1000 # JASON MONEY HERE put it here for cheating
 		if net_worth - self.amount < self.amount: 
 			return {"status" : "Insufficient Funds"}
 		# transaction = twelve_chars(self.amount)+sha256(self.recipient.publicKey.encode()).hexdigest()+sha256(self.sender.privateKey).encode().hexdigest()
@@ -28,14 +33,18 @@ class Transaction:
 def twelve_chars(amount):
 	# each hash is ed in the 64 characters long, so total msg length is 140 characters #? maybe end instead of ed
 	return "0"*(12-len(str(amount))) + str(amount)
- 
-def create_transaction(self, sender, recipient, amount): 
+
+def create_transaction(sender, recipient, amount): 
 	t = Transaction(sender, recipient, amount)
-	return t.validate_transaction()
+	# return t.validate_transaction()
+	return t.cheat_transaction()
 
-def create_transaction_no_validation(self, sender, recipient, amount):
-	return Transaction(sender, recipient, amount)
+def create_transaction_no_validation(sender, recipient, amount):
+	t = Transaction(sender, recipient, amount)
+	blockchain.add_transaction(t)
+	return t
 
+"""
 
 #create_contract (with sender_public_key, recipient_public_key, date_closed, amount_in, amount_out)
 def create_contract(date, amount: int, times : list, sender_public_key : dict, recipient_public_key : dict, condition_type, condition_argument): # Add an Amount
@@ -144,3 +153,5 @@ class Smart_Contract:
 
 	def release():
 		pass
+
+"""

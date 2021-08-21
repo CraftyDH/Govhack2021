@@ -136,3 +136,9 @@ def get_private_public_keys():
             "user": n
         } for n in users
     ]
+
+def find_user_public_key(public_key):
+    return next(filter(lambda n: n["public_key"] == public_key, load_user_json()))
+
+def find_user_private_key(private_key):
+    return next(filter(lambda n: n["private_key"] == private_key, load_user_json()))

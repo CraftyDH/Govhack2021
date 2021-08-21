@@ -146,12 +146,12 @@
             var username = $('#l_username').val();
             var password = $('#l_password').val();
 
-            if(username.length <= 5 || username.includes(" ")){
+            if(username.length < 5 || username.includes(" ")){
               displayAlert("#loginAlert","l_alert",'{"status":"invalid username"}');
                     return;
             }
 
-            if(password.length <= 8 || password.length >= 255){
+            if(password.length < 8 || password.length > 255){
               displayAlert("#loginAlert","l_alert",'{"status":"invalid password"}');
                     return;
             }

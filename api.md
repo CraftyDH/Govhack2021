@@ -124,6 +124,7 @@ GET /block/{id}
 POST /create_transaction
 HTTP_FORM Params
 sender_private_key: String/Int (hex key)
+recipient_public_key: String/Int (hex key)
 password: String
 
 ## Success
@@ -258,7 +259,13 @@ POST /get_all_contracts
 ## Sign Contract
 POST /sign_contract
 HTTP_FORM Params
+private_key: String/Int (hex key)
+contract_id: Int
 
+## Success
+{
+  "status": "success"
+}
 
 ## Success
 {"status": "success"}
