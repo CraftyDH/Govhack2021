@@ -165,12 +165,12 @@
          </div>
       </nav>
       <main class="content">
-         <div class="row mt-5">
+         <div class="row mt-5 d-flex justify-content-center">
             <div class="col-12 mb-4">
                <div class="card bg-yellow-100 border-0 shadow">
-                  <div class="card-header d-sm-flex flex-row align-items-center flex-0">
+                  <div class="card-header d-sm-flex flex-row align-items-center flex-0 w-50">
                      <div class="d-block mb-3 mb-sm-0">
-                        <div class="fs-5 fw-normal mb-2">Transaction vs Time</div>
+                        <div class="fs-5 fw-normal mb-2">All Transactions</div>
                         <!-- <h2 class="fs-3 fw-extrabold">$10,567</h2> -->
                         <div class="small mt-2"> 
                            <!-- <span class="fw-normal me-2">Yesterday</span>                              
@@ -181,6 +181,21 @@
                   </div>
                   <div class="card-body p-2">
                      <div class="ct-chart ct-chart-sales-value ct-double-octave ct-series-g"></div>
+                  </div>
+
+                  <div class="card-header d-sm-flex flex-row align-items-center flex-0 w-50">
+                     <div class="d-block mb-3 mb-sm-0">
+                        <div class="fs-5 fw-normal mb-2">Last 30 Day Transactions</div>
+                        <!-- <h2 class="fs-3 fw-extrabold">$10,567</h2> -->
+                        <div class="small mt-2"> 
+                           <!-- <span class="fw-normal me-2">Yesterday</span>                              
+                           <span class="fas fa-angle-up text-success"></span>                                   
+                           <span class="text-success fw-bold">10.57%</span> -->
+                        </div>
+                     </div>
+                  </div>
+                  <div class="card-body p-2 mt-3">
+                     <div id='c2' class="mr-3 ct-chart-sales-value ct-double-octave ct-series-g"></div>
                   </div>
                </div>
             </div>
@@ -193,11 +208,7 @@
              url: "/get_group_data",
              cache: false,
              success: function(result){
-                l = [];
-                for(var i =0;i<result.length;i++){
-                   l.push("Day"+(i+1));
-                }
-               new Chartist.Line('.ct-chart', {
+                new Chartist.Line('.ct-chart', {
                   // labels: l,
                   series: [
                   result
@@ -206,6 +217,26 @@
                low: 0,
                showArea: true,
                fullWidth: true,
+               plugins: [
+                  Chartist.plugins.tooltip()
+               ]
+               });
+
+               result = result.slice(result.length-31,result.length-1);
+               l = [];
+                for(var i =0;i<result.length;i++){
+                   l.push((i+1));
+                }
+               new Chartist.Bar('#c2', {
+                  labels: l,
+                  series: [
+                  result
+               ]
+               }, {
+               low: 0,
+               high:150,
+               showArea: true,
+
                plugins: [
                   Chartist.plugins.tooltip()
                ]

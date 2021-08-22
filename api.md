@@ -277,3 +277,11 @@ contract_id: Int
 {"status": "success"}
 ## Failure
 {"status": "failed declining contract"}
+
+
+## get_group_data
+/get_group_data
+post
+
+## Success
+["count"],...]
