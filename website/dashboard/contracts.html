@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <!-- Primary Meta Tags -->
+      <title>GriffinCoin - Contracts</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <!-- Favicon -->
+      <link rel="apple-touch-icon" sizes="120x120" href="/static/favicons/apple-touch-icon.png">
+      <link rel="icon" type="image/png" sizes="32x32" href="/static/favicons/favicon-32x32.png">
+      <link rel="icon" type="image/png" sizes="16x16" href="/static/favicons/favicon-16x16.png">
+      <link rel="manifest" href="/static/favicons/site.webmanifest">
+      <meta name="msapplication-TileColor" content="#da532c">
+      <meta name="theme-color" content="#ffffff">
+      <!-- Sweet Alert -->
+      <link type="text/css" href="./vendor/sweetalert2/dist/sweetalert2.min.css" rel="stylesheet">
+      <!-- Notyf -->
+      <link type="text/css" href="./vendor/notyf/notyf.min.css" rel="stylesheet">
+      <!-- Volt CSS -->
+      <link type="text/css" href="./css/volt.css" rel="stylesheet">
+      <!-- NOTICE: You can use the _analytics.html partial to include production code specific code & trackers -->
+      <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.0/dist/js.cookie.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+      <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/jszip-2.5.0/dt-1.10.25/af-2.3.7/b-1.7.1/b-colvis-1.7.1/b-html5-1.7.1/b-print-1.7.1/cr-1.5.4/date-1.1.1/fc-3.3.3/fh-3.1.9/kt-2.6.2/r-2.2.9/rg-1.1.3/rr-1.2.8/sc-2.0.4/sb-1.1.0/sp-1.3.0/sl-1.3.3/datatables.min.css"/>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+      <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/jszip-2.5.0/dt-1.10.25/af-2.3.7/b-1.7.1/b-colvis-1.7.1/b-html5-1.7.1/b-print-1.7.1/cr-1.5.4/date-1.1.1/fc-3.3.3/fh-3.1.9/kt-2.6.2/r-2.2.9/rg-1.1.3/rr-1.2.8/sc-2.0.4/sb-1.1.0/sp-1.3.0/sl-1.3.3/datatables.min.js"></script>
+
+
+      <!-- Core -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+      <!-- Vendor JS -->
+      <script src="./vendor/onscreen/dist/on-screen.umd.min.js"></script>
+      <!-- Slider -->
+      <script src="/dashboard/vendor/nouislider/dist/nouislider.min.js"></script>
+      <!-- Smooth scroll -->
+      <script src="./vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js"></script>
+      <!-- Charts -->
+      <script src="./vendor/chartist/dist/chartist.min.js"></script>
+      <script src="./vendor/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+      <!-- Datepicker -->
+      <script src="./vendor/vanillajs-datepicker/dist/js/datepicker.min.js"></script>
+      <!-- Sweet Alerts 2 -->
+      <script src="./vendor/sweetalert2/dist/sweetalert2.all.min.js"></script>
+      <!-- Moment JS -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+      <!-- Vanilla JS Datepicker -->
+      <script src="./vendor/vanillajs-datepicker/dist/js/datepicker.min.js"></script>
+      <!-- Notyf -->
+      <script src="./vendor/notyf/notyf.min.js"></script>
+      <!-- Simplebar -->
+      <script src="./vendor/simplebar/dist/simplebar.min.js"></script>
+      <!-- Volt JS -->
+      <script src="./assets/js/volt.js"></script>
+
+      <style>
+         body{
+          font-family: monospace !important;
+         }
+
+         kbd:hover{
+          color:rgb(51,255,51) !important;
+        }
+      </style>
+   </head>
+   <body>
+      <!-- NOTICE: You can use the _analytics.html partial to include production code specific code & trackers -->
+      <script>
+         function createGuid()  
+         {  
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxx'.replace(/[xy]/g, function(c) {  
+               var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);  
+               return v.toString(16);  
+            });  
+         } 
+
+         //verify the current user credential
+         var username = Cookies.get('username');
+         var password = Cookies.get('password');
+         var user;
+         var table1;
+         var table2;
+
+
+         function getRows(table){
+            return table.rows( { selected: true });
+         }
+         
+         if(!username || !password) logout();
+         
+         $.ajax({
+             type: "POST",
+             async: true,
+             url: "/login",
+             cache: false,
+             data: {
+                  username:username,
+                  password:password,
+             },
+             success: function(result){
+                 var status = result.status;
+                 if(status != "success"){ //error
+                     logout();
+                     return;
+                 }
+                 user = result.user;
+                  $('#balance').html('User: '+user.username+"<br>Balance: $"+user.user_worth);
+                  table1 = $('#pending').DataTable({
+                     deferRender: true,
+                     responsive: true,
+                     "ajax": '/' + username + '/get_all_contracts/pending',
+                     columns: [
+                           { title: "ID" , data: 'ID'},
+                           { title: "Senders" ,data: "Senders" },
+                           { title: "Recipients",data:"Recipients" },
+                           { title: "Amount",data:"Amount" },
+                           { title: "Increment",data:"Increment" },
+                           { title: "Limit" ,data:"Limit" },
+                           { title: "Start Date",data:"StartDate" },
+                           { title: "End Date",data:"EndDate" },
+                           { title: "Status",data:"Status" },
+                     ],
+                     rowId: 'ID',
+                     select: true,
+                     "language": {
+                        "zeroRecords": "Records: NULL",
+                     },
+                     "order": [[ 6, "desc" ]]
+                  });
+
+                  setInterval( function () {
+                     table1.ajax.reload(); // user paging is not reset on reload
+                  }, 5000 );
+
+                  table2 = $('#active').DataTable({
+                     responsive: true,
+                     "ajax": '/' + username + '/get_all_contracts/active',
+                     columns: [
+                        { title: "ID" },
+                        { title: "Senders" },
+                        { title: "Recipients" },
+                        { title: "Amount" },
+                        { title: "Increment" },
+                        { title: "Limit" },
+                        { title: "Start Date" },
+                        { title: "End Date" },
+                        { title: "Status" },
+                     ],
+                     "language": {
+                        "zeroRecords": "Records: NULL",
+                     },
+                     "order": [[ 6, "desc" ]]
+                  });
+
+                  setInterval( function () {
+                     table2.ajax.reload( null, false ); // user paging is not reset on reload
+                  }, 5000 );
+             },
+         });
+         
+         
+         function logout(){
+             try{
+                 Cookies.remove('username', { path: '/' })
+                 Cookies.remove('password', { path: '/' })
+                 Cookies.remove('public_key', { path: '/' })
+                 Cookies.remove('private_key', { path: '/' })
+             }
+             finally{
+                 setTimeout(()=>{window.location.href = "/login";},300);
+             }
+         }
+
+         function createContract(){
+            var sender_private_key = user.private_key;
+            var recipient_public_key = $('#recipient_public_key').val();
+            var amount = $('#amount').val();
+            var start = $('#start').val();
+            var end = $('#end').val();
+            var limit = $('#limit').val();
+            var increment = $('#increment').val();
+
+            Swal.fire({
+               text: 'curl -x POST /create_smart_contract',
+               icon:'info',
+               showConfirmButton: false,
+            });
+
+            sender_arr = {[sender_private_key]: amount}
+            recipient_arr = {[recipient_public_key]: amount}
+
+            var data= {
+               amount:amount,
+               sender_arr: JSON.stringify(sender_arr),
+               recipient_arr: JSON.stringify(recipient_arr),
+               limit: limit,
+               start_date: start,
+               increment:increment,
+               end_date: end
+            }
+
+            $.ajax({
+               type: "POST",
+               async: true,
+               url: "/create_smart_contract",
+               cache: false,
+               data:data,
+               success: function(result){
+                  console.log(result)
+                  var status = result.status;
+                  if(status != "success"){ //error
+                        Swal.fire('ERR::create_smart_contract',status,'error');
+                        return;
+                  }
+                  Swal.close();
+                  Swal.fire({
+                     icon:'success',
+                     html:'<kbd style="color:rgb(51,255,51)">$ ./create_smart_contract success!</kbd>',
+                  }).then((result) => {
+                     $('#close-transaction').click();
+                     $('#limit').val(0);
+                  })
+               },
+               error: function(xhr, ajaxOptions, thrownError){
+                  Swal.close();
+                  Swal.fire({
+                     title:xhr.status,
+                     text:JSON.stringify(thrownError,null,2),
+                     icon:'error'
+                  })
+               }
+            });
+         }
+         
+      </script>
+      <nav class="navbar navbar-dark navbar-theme-primary px-4 col-12 d-lg-none">
+         <a class="navbar-brand me-lg-5" href="./index.html">
+         <img class="navbar-brand-dark" src="./assets/img/brand/light.svg" alt="Volt logo" /> <img class="navbar-brand-light" src="./assets/img/brand/dark.svg" alt="Volt logo" />
+         </a>
+         <div class="d-flex align-items-center">
+            <button class="navbar-toggler d-lg-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+         </div>
+      </nav>
+      <nav id="sidebarMenu" class="sidebar d-lg-block bg-gray-800 text-white collapse" data-simplebar>
+         <div class="sidebar-inner px-4 pt-3">
+            <ul class="nav flex-column pt-3 pt-md-0">
+               <li class="nav-item">
+                  <a href="/dashboard/index.html" class="nav-link">
+                     <span class="sidebar-icon">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                           <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
+                           <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
+                        </svg>
+                     </span>
+                     <span class="sidebar-text">Dashboard</span>
+                  </a>
+               </li>
+               <li class="nav-item">
+                  <a href="/dashboard/transactions.html" class="nav-link">
+                     <span class="sidebar-icon">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                           <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
+                           <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                        </svg>
+                     </span>
+                     <span class="sidebar-text">Transactions</span>
+                  </a>
+               </li>
+               <li class="nav-item active">
+                  <a href="/dashboard/contracts.html" class="nav-link">
+                     <span class="sidebar-icon">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                           <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                        </svg>
+                     </span>
+                     <span class="sidebar-text">Contracts</span>
+                  </a>
+               </li>
+               <li class="nav-item">
+                  <a href="/dashboard/addresses.html" class="nav-link">
+                     <span class="sidebar-icon">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                           <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                     </span>
+                     <span class="sidebar-text">Addresses</span>
+                  </a>
+               </li>
+               <li class="nav-item ">
+                  <a href="javascript:logout();" class="nav-link">
+                     <span class="sidebar-icon">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                           <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"></path>
+                        </svg>
+                     </span>
+                     <span class="sidebar-text">Logout</span>
+                  </a>
+               </li>
+            </ul>
+         </div>
+      </nav>
+      <div class="modal fade" id="modal-contract" tabindex="-1" role="dialog" aria-labelledby="modal-contract" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered" role="document">
+             <div class="modal-content">
+                 <div class="modal-header">
+                     <h2 class="h6 modal-title">$ ./new-contract.sh</h2>
+                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id='close-transaction'></button>
+                 </div>
+                 <div class="modal-body">
+                     <div class="mb-3">
+                        <label for="recipient_public_key" class="form-label">$recipient_public_key</label>
+                        <input type="text" class="form-control" id="recipient_public_key" placeholder="$recipient_public_key">
+                     </div>
+                     <div class="mb-3">
+                        <label for="amount" class="form-label">$amount</label>
+                        <input type="number" class="form-control" id="amount" placeholder="$amount" value=0>
+                     </div>
+                     <div class="mb-3">
+                        <label class="my-1 me-2" for="type">Type</label>
+                        <select class="form-select" id="type" aria-label="Contract Type Selector">
+                           <option selected value="1">$periodic-contract</option>
+                           <option value="2">$limit-contract</option>
+                        </select>
+                     </div>
+                     <div id="type1">
+                        <div class="mb-3">
+                           <label for="start">$start-date</label>
+                           <div class="input-group">
+                              <span class="input-group-text">
+                                 <svg class="icon icon-xs" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
+                              </span>
+                              <input data-datepicker="" class="form-control" id="start" type="text" placeholder="dd/mm/yyyy" required>
+                           </div>
+                        </div>
+                        <div class="mb-3">
+                           <label for="increment" class="form-label">$increment</label>
+                           <input type="number" class="form-control" id="increment" placeholder="$increment" value=1>
+                        </div>
+                        <div class="mb-3">
+                           <label for="end">$end-date</label>
+                           <div class="input-group">
+                              <span class="input-group-text">
+                                 <svg class="icon icon-xs" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
+                              </span>
+                              <input data-datepicker="" class="form-control" id="end" type="text" placeholder="dd/mm/yyyy" required>
+                           </div>
+                        </div>
+                     </div>
+                     <div id='type2' class="d-none">
+                        <div class="mb-3">
+                           <label for="limit" class="form-label">$limit</label>
+                           <input type="number" class="form-control" id="limit" placeholder="$limit" value=0>
+                        </div>
+                     </div>
+                 </div>
+                 <div class="modal-footer">
+                     <a class="text-decoration-none" style="cursor:pointer" href="javascript:createContract()"><kbd>$ ./send.sh</kbd></a>
+                 </div>
+             </div>
+         </div>
+     </div>
+      <main class="content font-monospace" style="min-height:500px;">
+         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+            <div class="d-block mb-4 mb-md-0">
+               <nav aria-label="breadcrumb" class="d-none d-md-inline-block">
+                  <ol class="breadcrumb breadcrumb-dark breadcrumb-transparent">
+                     <li class="breadcrumb-item">User</li>
+                     <li class="breadcrumb-item active" aria-current="page">Contracts</li>
+                  </ol>
+               </nav>
+               <h2 class="h4">All Contracts</h2>
+               <p class="mb-0 text-muted" id="balance"></p>
+            </div>
+            <div class="btn-toolbar mt-5 mb-2 mb-md-0">
+              <a class="text-decoration-none mb-5" href="javascript:void" data-bs-toggle="modal" data-bs-target="#modal-contract"><kbd class="hacker">$ ./smart-contract.sh</kbd></a>
+            </div>
+         </div>
+         <div class="card card-body shadow border-0 table-wrapper table-responsive mb-5">
+            <h6>Pending Contracts</h6>
+            <hr>
+            <div class="btn-toolbar mb-md-0">
+               <a class="text-decoration-none mb-3" href="javascript:void"><kbd class="hacker">$ ./sign-contract.sh</kbd></a>
+               <small style="margin-left: .5rem;margin-right: .5rem;">/</small>
+            <a class="text-decoration-none mb-3" href="javascript:void"><kbd class="hacker">$ ./decline-contract.sh</kbd></a>
+            </div>
+            <table class="table table-hover" id="pending">
+               
+            </table>
+         </div>
+         <div class="card card-body shadow border-0 table-wrapper table-responsive mt-5 mb-3">
+            <h6>Active Contracts</h6>
+            <hr>
+            <table class="table table-hover" id="active">
+               
+            </table>
+         </div>
+      </main>
+      <script>
+         setInterval(function(){
+            var id = $("select#type").children("option:selected").val();
+            if(id == 1){
+               $('#type2').addClass('d-none')
+               $('#type1').removeClass('d-none')
+            }
+            else{
+               $('#type1').addClass('d-none')
+               $('#type2').removeClass('d-none')
+            }
+         },200);
+      </script>
+   </body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+      <!-- Primary Meta Tags -->
+      <title>GriffinCoin - Dashboard</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <!-- Favicon -->
+      <link rel="apple-touch-icon" sizes="120x120" href="/static/favicons/apple-touch-icon.png">
+      <link rel="icon" type="image/png" sizes="32x32" href="/static/favicons/favicon-32x32.png">
+      <link rel="icon" type="image/png" sizes="16x16" href="/static/favicons/favicon-16x16.png">
+      <link rel="manifest" href="/static/favicons/site.webmanifest">
+      <meta name="msapplication-TileColor" content="#da532c">
+      <meta name="theme-color" content="#ffffff">
+      <!-- Sweet Alert -->
+      <link type="text/css" href="./vendor/sweetalert2/dist/sweetalert2.min.css" rel="stylesheet">
+      <!-- Notyf -->
+      <link type="text/css" href="./vendor/notyf/notyf.min.css" rel="stylesheet">
+      <!-- Volt CSS -->
+      <link type="text/css" href="./css/volt.css" rel="stylesheet">
+      <!-- NOTICE: You can use the _analytics.html partial to include production code specific code & trackers -->
+      <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.0/dist/js.cookie.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+      <!-- Core -->
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+      <!-- Vendor JS -->
+      <script src="./vendor/onscreen/dist/on-screen.umd.min.js"></script>
+      <!-- Slider -->
+      <script src="/dashboard/vendor/nouislider/dist/nouislider.min.js"></script>
+      <!-- Smooth scroll -->
+      <script src="./vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js"></script>
+      <!-- Charts -->
+      <script src="./vendor/chartist/dist/chartist.min.js"></script>
+      <script src="./vendor/chartist-plugin-tooltips/dist/chartist-plugin-tooltip.min.js"></script>
+      <!-- Datepicker -->
+      <script src="./vendor/vanillajs-datepicker/dist/js/datepicker.min.js"></script>
+      <!-- Sweet Alerts 2 -->
+      <script src="./vendor/sweetalert2/dist/sweetalert2.all.min.js"></script>
+      <!-- Moment JS -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+      <!-- Vanilla JS Datepicker -->
+      <script src="./vendor/vanillajs-datepicker/dist/js/datepicker.min.js"></script>
+      <!-- Notyf -->
+      <script src="./vendor/notyf/notyf.min.js"></script>
+      <!-- Simplebar -->
+      <script src="./vendor/simplebar/dist/simplebar.min.js"></script>
+      <!-- Volt JS -->
+      <!-- <script src="./assets/js/volt.js"></script> -->
+
+      <style>
+         body{
+         font-family: monospace !important;
+         }
+      </style>
+   </head>
+   <body>
+      <!-- NOTICE: You can use the _analytics.html partial to include production code specific code & trackers -->
+      <script>
+         //verify the current user credential
+         var username = Cookies.get('username');
+         var password = Cookies.get('password');
+         
+         if(!username || !password) logout();
+         
+         $.ajax({
+             type: "POST",
+             async: true,
+             url: "/login",
+             cache: false,
+             data: {
+                 username,
+                 password
+             },
+             success: function(result){
+                 var status = result.status;
+                 if(status != "success"){ //error
+                     logout();
+                     return;
+                 }
+             },
+         });
+         
+         
+         function logout(){
+             try{
+                 Cookies.remove('username', { path: '/' })
+                 Cookies.remove('password', { path: '/' })
+                 Cookies.remove('public_key', { path: '/' })
+                 Cookies.remove('private_key', { path: '/' })
+             }
+             finally{
+                 setTimeout(()=>{window.location.href = "/login";},300);
+             }
+         }
+         
+      </script>
+      <nav class="navbar navbar-dark navbar-theme-primary px-4 col-12 d-lg-none">
+         <a class="navbar-brand me-lg-5" href="./index.html">
+         <img class="navbar-brand-dark" src="./assets/img/brand/light.svg" alt="Volt logo" /> <img class="navbar-brand-light" src="./assets/img/brand/dark.svg" alt="Volt logo" />
+         </a>
+         <div class="d-flex align-items-center">
+            <button class="navbar-toggler d-lg-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+         </div>
+      </nav>
+      <nav id="sidebarMenu" class="sidebar d-lg-block bg-gray-800 text-white collapse" data-simplebar>
+         <div class="sidebar-inner px-4 pt-3">
+            <ul class="nav flex-column pt-3 pt-md-0">
+               <li class="nav-item  active ">
+                  <a href="/dashboard/index.html" class="nav-link">
+                     <span class="sidebar-icon">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                           <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
+                           <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
+                        </svg>
+                     </span>
+                     <span class="sidebar-text">Dashboard</span>
+                  </a>
+               </li>
+               <li class="nav-item ">
+                  <a href="/dashboard/transactions.html" class="nav-link">
+                     <span class="sidebar-icon">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                           <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"></path>
+                           <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"></path>
+                        </svg>
+                     </span>
+                     <span class="sidebar-text">Transactions</span>
+                  </a>
+               </li>
+               <li class="nav-item">
+                  <a href="/dashboard/contracts.html" class="nav-link">
+                     <span class="sidebar-icon">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                           <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                        </svg>
+                     </span>
+                     <span class="sidebar-text">Contracts</span>
+                  </a>
+               </li>
+               <li class="nav-item">
+                  <a href="/dashboard/addresses.html" class="nav-link">
+                     <span class="sidebar-icon">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                           <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                     </span>
+                     <span class="sidebar-text">Addresses</span>
+                  </a>
+               </li>
+               <li class="nav-item ">
+                  <a href="javascript:logout();" class="nav-link">
+                     <span class="sidebar-icon">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                           <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"></path>
+                        </svg>
+                     </span>
+                     <span class="sidebar-text">Logout</span>
+                  </a>
+               </li>
+            </ul>
+         </div>
+      </nav>
+      <main class="content">
+         <div class="row mt-5">
+            <div class="col-12 mb-4">
+               <div class="card bg-yellow-100 border-0 shadow">
+                  <div class="card-header d-sm-flex flex-row align-items-center flex-0">
+                     <div class="d-block mb-3 mb-sm-0">
+                        <div class="fs-5 fw-normal mb-2">Transaction vs Time</div>
+                        <!-- <h2 class="fs-3 fw-extrabold">$10,567</h2> -->
+                        <div class="small mt-2"> 
+                           <!-- <span class="fw-normal me-2">Yesterday</span>                              
+                           <span class="fas fa-angle-up text-success"></span>                                   
+                           <span class="text-success fw-bold">10.57%</span> -->
+                        </div>
+                     </div>
+                  </div>
+                  <div class="card-body p-2">
+                     <div class="ct-chart ct-chart-sales-value ct-double-octave ct-series-g"></div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </main>
+      <script>
+         $.ajax({
+             type: "POST",
+             async: true,
+             url: "/get_group_data",
+             cache: false,
+             success: function(result){
+                l = [];
+                for(var i =0;i<result.length;i++){
+                   l.push("Day"+(i+1));
+                }
+               new Chartist.Line('.ct-chart', {
+                  // labels: l,
+                  series: [
+                  result
+               ]
+               }, {
+               low: 0,
+               showArea: true,
+               fullWidth: true,
+               plugins: [
+                  Chartist.plugins.tooltip()
+               ]
+               });
+             },
+         });
+      
+      </script>
+   </body>
+</html>
