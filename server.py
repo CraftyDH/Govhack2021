@@ -6,6 +6,8 @@ b = block.blockchain
 import transaction as t
 from safe_json import safe_str
 import users, update_net_worths
+import csv
+import uuid
 
 update_net_worths.start_thread()
 
@@ -110,7 +112,7 @@ async def get_transaction_data(request):
     username = request.match_info["username"]
     ret_trans = [n for block in b.chain for n in block.transactions]
     ret_trans = list(filter(lambda n: (n.sender["username"] == username) != (n.recipient["username"] == username), ret_trans))
-    ret_trans = [[n.sender["username"], n.recipient["username"], n.amount, n.hash, round(n.tax,2), n.time] for n in ret_trans]
+    ret_trans = [[n.sender["username"], n.recipient["username"], n.amount, str(uuid.uuid4()), round(n.tax,2), n.time] for n in ret_trans]
     ret_json = safe_str({"data": ret_trans})
     return web.Response(text=ret_json, content_type="application/json")
 
@@ -238,6 +240,22 @@ async def decline_transaction(request):
     ret_json = safe_str(t.decline_contract(data["contract_id"], data["private_key"]))
     return web.Response(text=ret_json, content_type="application/json")
 
+from itertools import groupby
+
+
+@routes.post('/get_group_data')
+async def get_group_data(request):
+    await request.post()
+    f = open("data/block.csv", newline='')
+    read = csv.reader(f)
+    i = iter(read)
+    next(i)
+    lines = []
+    for n in i: lines.append(n[2])
+    g = groupby(lines)
+    g = [len(list(v)) for k,v in g]
+    return web.json_response(g)
+
 app = web.Application()
 app.add_routes(routes)
 
@@ -245,10 +263,3 @@ web.run_app(app, port=os.environ.get('PORT', 8080))
 
 # import dashboard
 
-from itertools import groupby
-
-@routes.post('/get_group_data')
-async def get_group_data(request):
-    with open(csv_file, newline='') as f:
-        read = csv.reader(f)
-        

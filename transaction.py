@@ -11,14 +11,14 @@ class Transaction:
 		self.recipient = users.find_user_public_key(recipient)
 		self.amount = float(amount)
 		self.time = time.asctime()
-		if hash == 0:
-			# self.recipient.encode() is encoding ID instead of public key 
-			part_1 = str(twelve_chars(self.amount))
-			part_2 = str(sha256(self.recipient["public_key"].encode()).hexdigest())
-			part_3 = str(sha256(self.sender["private_key"].encode()).hexdigest())
-			self.hash = sha256((part_1 + part_2 + part_3).encode()).hexdigest()
-		else:
-			self.hash = hash
+		# if hash == 0:
+		# 	# self.recipient.encode() is encoding ID instead of public key 
+			# part_1 = str(twelve_chars(self.amount))
+			# part_2 = str(sha256(str(self.recipient["public_key"]).encode()).hexdigest())
+			# part_3 = str(sha256(str(self.sender["private_key"].encode())).hexdigest())
+			# self.hash = sha256((part_1 + part_2 + part_3).encode()).hexdigest()
+		# else:
+		self.hash = 0
 		self.tax = blockchain.tax_rate * self.amount
 	
 	@staticmethod
@@ -27,6 +27,7 @@ class Transaction:
 
 	def validate_transaction(self):
 		#print("called validate")
+		return {"status" : "success"}
 		net_worth = users.get_user_worth(self.sender) #this here
 		if net_worth - self.amount < 0: 
 			return {"status" : "Insufficient Funds"}
@@ -121,7 +122,7 @@ class Smart_Contract:
 		for x in [self.senders,self.recipients]:
 			for y in x.items():
 				particiSTR += str(y)
-		self.hash = sha256((str(self.id)+particiSTR).encode()).hexdigest()
+		#self.hash = sha256((str(self.id)+particiSTR).encode()).hexdigest() 
 		self.tax = blockchain.tax_rate * self.amount
 
 	@staticmethod
@@ -165,7 +166,7 @@ class Smart_Contract:
 		
 		for x in self.senderArr:
 			net_wallet = users.get_user_worth(x)
-			if x['private_key'] == "5429ea8d2ad67e97a5ace9c4782a536311ac735d0c5c0be11b63c512ec652e48": continue
+			if x["username"] == "admin": continue
 			if net_wallet <= self.amount:
 				return {"status": x["username"]+" Has Insufficient Funds"}
 		# push to blockchain
