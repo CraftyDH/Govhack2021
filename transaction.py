@@ -26,13 +26,13 @@ class Transaction:
 		pass
 
 	def validate_transaction(self):
+		print("called validate")
 		net_worth = users.get_user_worth(self.sender) #this here
-		# net_worth = 1000 # JASON MONEY HERE put it here for cheating
-		if net_worth - self.amount < self.amount: 
+		if net_worth - self.amount < 0: 
 			return {"status" : "Insufficient Funds"}
 		# transaction = twelve_chars(self.amount)+sha256(self.recipient.publicKey.encode()).hexdigest()+sha256(self.sender.privateKey).encode().hexdigest()
 		blockchain.unconfirmed_transactions.append(self.hash)
-		return {"status" : True}
+		return {"status" : "success"}
 
 def twelve_chars(amount):
 	# each hash is ed in the 64 characters long, so total msg length is 140 characters #? maybe end instead of ed
@@ -40,12 +40,17 @@ def twelve_chars(amount):
 
 def create_transaction(sender, recipient, amount): 
 	t = Transaction(sender, recipient, amount)
-	return t.validate_transaction()
+	tmp = t.validate_transaction()
+	if tmp["status"] == "success":
+		blockchain.add_transaction(t)
+		return tmp
+	else:
+		return tmp
 
-def create_transaction_no_validation(sender, recipient, amount):
-	t = Transaction(sender, recipient, amount)
-	blockchain.add_transaction(t)
-	return t
+# def create_transaction_no_validation(sender, recipient, amount):
+# 	t = Transaction(sender, recipient, amount)
+# 	blockchain.add_transaction(t)
+# 	return t
 
 #(self, date, senders, recipients, condition_argument, id, transaction_timestamps, contract_length)
 """
@@ -245,9 +250,6 @@ mutex = threading.Lock()
 class HedgeFund:
 	def __init__(self):
 		user = users.login("HedgeFund", "hedgefund") # if its already been stored in the json file just read from it
-		if user['status'] != "success":
-			raise Exception(user['status'])
-		
 		self.details = user["user"]
 		self.wallet = 1000
 		self.invested_users = {}
@@ -264,8 +266,9 @@ class HedgeFund:
 				self.wallet += added_money
 				if self.invested_users[user][1] <= self.invested_users[user][0]: # invested_users = {"public_key": [invested_amount, limit/threshold]}
 					user_dict = users.get_user_by_public_key(user)
-					create_transaction_no_validation(self.details["private_key"], user_dict["public_key"], self.invested_users[user][0]) # Give user money back
+					create_transaction(self.details["private_key"], user_dict["public_key"], self.invested_users[user][0]) # Give user money back
 					del self.invested_users[user]
+					self.status
 			mutex.release()
 
 	def smart_invest(self, user, investment, limit) -> Smart_Contract:
@@ -275,7 +278,7 @@ class HedgeFund:
 		else:
 			self.invested_users[user["public_key"]] = [investment, limit] # If they don't exist, then we assume they are a new investor and add them to the dict
 		# self, date, senders : dict, recipients : dict, id)
-		# below is jamies code, idk what its for
+		# below is jamie's code, idk what its for
 		mutex.release()
 		
 		return Smart_Contract(time.asctime(), {"sender": investment}, {"HedgeFund": investment})

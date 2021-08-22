@@ -1,0 +1,11 @@
+ - Make sure before deployment that transactions cannot be processed with insufficient funds
+
+ - make bank objects alongside hedgefund
+
+ - contract validation 
+
+  - contract status
+   ^pending, signed or declined
+
+ - when a new user is created, we need to give it a transaction of a starting balance
+ ^ first, we need to put the blockchain on disk

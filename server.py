@@ -55,17 +55,11 @@ async def block(request):
     except ValueError:
         return web.json_response({"status": "failed block request"})
 
-# @routes.get('/mine')
-# async def mine(request):
-#     ret = b.mine()
-#     ret_json = safe_str(ret)
-#     return web.Response(text=ret_json, content_type="application/json")
 
 @routes.post('/login')
 async def account(request):
     data = await request.post()
     user = users.login(data["username"], data["password"])
-    # user.balance = b.get_user_worth(data["username"])
     return web.json_response(user)
 
 @routes.post('/modify_password')
@@ -89,15 +83,16 @@ async def delete_account(request):
 @routes.post('/create_transaction')
 async def create_transaction(request):
     data = await request.post()
-
     if not data['recipient_public_key']: # If the passed recipient key is empty then it won't be in the database
         ret_json = safe_str({"status": "invalid recipient public key"}) 
         return web.Response(text=ret_json, content_type="application/json")
     if data["amount"]: # Here we check if the amount parameter is given as none we just pass it as 0 to the transaction class
-        trans = t.create_transaction_no_validation(data["sender_private_key"], data["recipient_public_key"], data["amount"])
+        trans = t.create_transaction(data["sender_private_key"], data["recipient_public_key"], data["amount"])
     else: # If data['amount'] == null/None 
-        trans = t.create_transaction_no_validation(data["sender_private_key"], data["recipient_public_key"], 0)
-    b.mine_transactions() # running here
+        trans = t.create_transaction(data["sender_private_key"], data["recipient_public_key"], 0)
+    
+    if trans["status"] != "success":
+        return web.json_response(trans)
     ret_json = safe_str({"status": "success", "transaction": trans})
     return web.Response(text=ret_json, content_type="application/json")
 
@@ -163,8 +158,8 @@ async def get_all_contracts(request):
 
     contracts = t.get_all_contracts(username, request.match_info["pending"])
     ret_json = [[
-        ", ".join(map(lambda i: find_user_private_key(i)[0]["username"]), n.senders),
-        ", ".join(map(lambda i: find_user_private_key(i)[0]["username"]), n.recipients),
+        ", ".join(map(lambda i: users.find_user_private_key(i)[0]["username"]), n.senders),
+        ", ".join(map(lambda i: users.find_user_private_key(i)[0]["username"]), n.recipients),
         n.amount,
         n.hash,
         n.tax,
@@ -180,18 +175,6 @@ async def get_all_contracts(request):
     ], """
     ret_json = safe_str({"data": ret_json})
     return web.Response(text=ret_json, content_type="application/json")
-
-# parameters: {
-#   "date": "Sun Jun 20 23:21:05 1993",
-#   "senders": [
-#     [*Pubkey0*, amount_contributed], ...
-#   ],
-#   "recipients": [
-#     [*Pubkey1*, amount_contributed], ...
-#   ],
-#   "condition_type": "time" | "withdrawl" | "stop_limit", (one of these 3)
-#   "condition_argument": "Sun Jun 20 23:21:05 1993" | ("salary" | "lumpsum") | "6969"
-# }
 
 @routes.post("/create_smart_contract")
 async def post_smart_contract(request):
@@ -238,7 +221,7 @@ async def get_all_contracts(request): # add error checking
 @routes.post('/sign_contract')
 async def sign_transaction(request):
     data = await request.post()    
-    ret_json = safe_str(sign_contract(data["contract_id"], data["private_key"]))
+    ret_json = safe_str(t.sign_contract(data["contract_id"], data["private_key"]))
     return web.Response(text=ret_json, content_type="application/json")
 
 

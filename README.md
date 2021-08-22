@@ -10,8 +10,8 @@ We used this data set because...
 2. requests
 3. bs4
 4. lxml
-5. hashlib
-6. base58
+5. base58
+6. random-username
 
 ```sh
 pip3 install aiohttp requests bs4 lxml hashlib base58

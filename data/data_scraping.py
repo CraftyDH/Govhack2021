@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup as soup
 # New data format
 # block_id, block_hash, block_timestamp, difficulty, transaction_hash, transaction_timestamp, sender, receiver, amount, tax
 # Made by Manindra
-CONST_DATA_PATH = "blocks_2020_08_14_09_00_00.csv"
+CONST_DATA_PATH = "block_data.csv"
 CONST_NEW_DATA_PATH = "block.csv"
 CONST_HEADERS = {
 'authority': 'scrapeme.live',
@@ -54,4 +54,4 @@ with open(CONST_DATA_PATH, "r") as f:
                             with open(CONST_NEW_DATA_PATH, "a") as a:
                                 a.write(f"{id}, {hash}, {timestamp}, {difficulty}, {transaction_data[0]}, {transaction_data[1]}, {transaction_data[2]}, {transaction_data[3]}, {transaction_data[4]}, {transaction_data[5]}\n")
                             print(f"Scraped block: {id}")
-                            break
+                            

@@ -140,7 +140,7 @@ class Blockchain:
 		while not compute_hash.startswith('0'*self.difficulty):
 			block.nonce += 1
 			compute_hash = block.compute_hash()
-			print("Nonce: "+str(block.nonce)+"\nHash: "+str(compute_hash)+"\n"+"="*(len(str(compute_hash))))
+			#print("Nonce: "+str(block.nonce)+"\nHash: "+str(compute_hash)+"\n"+"="*(len(str(compute_hash))))
 		return compute_hash
 
 	def add_block(self, block, proof):
@@ -213,10 +213,10 @@ class Blockchain:
 
 blockchain = Blockchain() #! POTENTIAL ERROR WITH EMPTY FILE. CHECK LATer
 
-BLOCK_JSON_FILE = "../json/block.json"
-def store_chain():
- 	safe_dump(blockchain, BLOCK_JSON_FILE)
+# BLOCK_JSON_FILE = "../json/block.json"
+# def store_chain():
+#  	safe_dump(blockchain, BLOCK_JSON_FILE)
 
-def load_chain():
- 	json_in = json.loads(open(BLOCK_JSON_FILE, "r").read())
- 	return Blockchain.load_json(json_in)
+# def load_chain():
+#  	json_in = json.loads(open(BLOCK_JSON_FILE, "r").read())
+#  	return Blockchain.load_json(json_in)

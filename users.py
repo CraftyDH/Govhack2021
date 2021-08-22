@@ -67,7 +67,7 @@ def create_user(username: str, password: str, public_key = None):
     modify_json(users, CONST_USER_JSON)
 
     #giving money
-    trans = transaction.create_transaction_no_validation("5429ea8d2ad67e97a5ace9c4782a536311ac735d0c5c0be11b63c512ec652e48", public_key, 1000) #sender private key 0
+    trans = transaction.create_transaction("5429ea8d2ad67e97a5ace9c4782a536311ac735d0c5c0be11b63c512ec652e48", public_key, 1000) #sender private key 0
 
     return {
         "status": "success",
