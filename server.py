@@ -1,11 +1,13 @@
 from aiohttp import web
 import json
-
+import os
 import block
 b = block.blockchain
 import transaction as t
 from safe_json import safe_str
-import users
+import users, update_net_worths
+
+update_net_worths.start_thread()
 
 routes = web.RouteTableDef()
 
@@ -53,11 +55,11 @@ async def block(request):
     except ValueError:
         return web.json_response({"status": "failed block request"})
 
-@routes.get('/mine')
-async def mine(request):
-    ret = b.mine()
-    ret_json = safe_str(ret)
-    return web.Response(text=ret_json, content_type="application/json")
+# @routes.get('/mine')
+# async def mine(request):
+#     ret = b.mine()
+#     ret_json = safe_str(ret)
+#     return web.Response(text=ret_json, content_type="application/json")
 
 @routes.post('/login')
 async def account(request):
@@ -242,4 +244,4 @@ async def sign_transaction(request):
 
 app = web.Application()
 app.add_routes(routes)
-web.run_app(app)
+web.run_app(app, port=80)

@@ -203,12 +203,13 @@ class Blockchain:
 
 	def add_transaction(self, trans):
 		self.unconfirmed_transactions.append(trans)
-		return #! NOT RETURNING ANYTHING
+		self.mine_transactions()
+		return {"status": "success"}
 
 	def add_contract(self, contract):
 		self.unconfirmed_contracts.append(contract)
 		self.mine_contracts()
-		return {"status": "Contract mining called"}
+		return {"status": "success"}
 
 blockchain = Blockchain() #! POTENTIAL ERROR WITH EMPTY FILE. CHECK LATer
 

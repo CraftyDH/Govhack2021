@@ -4,6 +4,7 @@ from block import blockchain
 from hashlib import sha256
 import time, random
 import threading
+
 class Transaction:
 	def __init__(self, sender, recipient, amount, hash=0): #user dictionary
 		self.sender = users.find_user_private_key(sender)
@@ -41,10 +42,10 @@ def create_transaction(sender, recipient, amount):
 	t = Transaction(sender, recipient, amount)
 	return t.validate_transaction()
 
-# def create_transaction_no_validation(sender, recipient, amount):
-# 	t = Transaction(sender, recipient, amount)
-# 	blockchain.add_transaction(t)
-# 	return t
+def create_transaction_no_validation(sender, recipient, amount):
+	t = Transaction(sender, recipient, amount)
+	blockchain.add_transaction(t)
+	return t
 
 #(self, date, senders, recipients, condition_argument, id, transaction_timestamps, contract_length)
 """
@@ -235,6 +236,9 @@ class Time_Contract(Smart_Contract):
 			if i < now:
 				amount += 1
 		return amount
+
+	def fulfilled(self) -> bool:
+		return (len(self.transaction_timestamps) - self.get_num_previous_transactions == 0)
 
 mutex = threading.Lock()
 

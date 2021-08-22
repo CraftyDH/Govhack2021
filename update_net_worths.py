@@ -14,17 +14,21 @@ def loop():
 
     
 """
- - Make sure before deployment that transactions cannot be processed with insufficient funds
 
  - make bank objects alongside hedgefund
+    - we should stick to only one hedgefund?
 
  - contract validation 
+    - doing now Jonte
 
   - contract status
    ^pending, signed or declined
+    - what?
 
  - when a new user is created, we need to give it a transaction of a starting balance
- ^ first, we need to put the blockchain on disk
+    - Jonte is doing this one
+    - after making admin account add that address to users.py
+    - done
 """
 
 

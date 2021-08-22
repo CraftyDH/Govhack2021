@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(1, "../dependencies")
 from block import *
-from transaction import *
+import transaction
 from safe_json import safe_dump
 import json
 from threading import Lock
@@ -65,6 +65,10 @@ def create_user(username: str, password: str, public_key = None):
     users.append(newuser)
 
     modify_json(users, CONST_USER_JSON)
+
+    #giving money
+    trans = transaction.create_transaction_no_validation("5429ea8d2ad67e97a5ace9c4782a536311ac735d0c5c0be11b63c512ec652e48", public_key, 1000) #sender private key 0
+
     return {
         "status": "success",
         "user": newuser
@@ -183,11 +187,14 @@ def get_user_worth_from_transactions(user : dict) -> float: # This is used for t
 def get_user_worth_from_smart_contracts_periodic(user: dict) -> float: # This is used for static, fixed transfer dates
     for block in blockchain.contracts_chain:
         for contract in block.transactions:
-            if type(contract) == Time_Contract:
+            if type(contract) == transaction.Time_Contract:
                 if (user["public_key"] in contract.senders):
                     contribution_amount = contract.senders[user["public_key"]] * (-1)
                 elif (user["public_key"] in contract.recipients):
                     contribution_amount = contract.recipients[user["public_key"]]
+                if contract.fulfilled:
+                    contract.status = "fulfilled"
+                    #Jamie this is where you make it fufilled or whatever
                 return contract.get_num_previous_transactions() * contribution_amount
     return 0
 
