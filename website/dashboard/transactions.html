@@ -95,7 +95,7 @@
                      return;
                  }
                  user = result.user;
-                 $('#balance').html('User: '+user.username+"<br>Balance: $0");
+                 $('#balance').html('User: '+user.username+"<br>Balance: $"+user.user_worth);
              },
          });
 
@@ -135,8 +135,23 @@
                   "language": {
                      "zeroRecords": "Records: NULL",
                   },
-                  "order": [[ 5, "desc" ]]
+                  "order": [[ 5, "desc" ]],
+                  dom: 'Bfrtip',
+                  select: true,
+                  buttons: {
+                     buttons: [
+                           {
+                              text: 'Alert',
+                              action: function ( e, dt, node, config ) {
+                                 alert( 'Activated!' );
+                                 this.disable(); // disable button
+                              }
+                           }
+                     ]
+                  }
                });
+               
+               
 
                setInterval( function () {
                   table.ajax.reload( null, false ); // user paging is not reset on reload

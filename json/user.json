@@ -1,14 +1,1 @@
-[
-    {
-        "username": "HedgeFund",
-        "password": "hedgefund",
-        "public_key": "f1c465022015749049d33419fc6bb87c0a112ce88136994a13b2a82613dcb3f0",
-        "private_key": "34dc2f78af9b7ca0b7900f4d8ffa8a0865c75469f39bf1e92d9eb708a001807e"
-    },
-    {
-        "username": "admin",
-        "password": "jerma985",
-        "public_key": "39ae1677d39e910797c8bd8856dc863dd719f0555d98fcd64d15130a87fcb5de",
-        "private_key": "5429ea8d2ad67e97a5ace9c4782a536311ac735d0c5c0be11b63c512ec652e48"
-    }
-]
+[{"username": "HedgeFund", "password": "hedgefund", "public_key": "f1c465022015749049d33419fc6bb87c0a112ce88136994a13b2a82613dcb3f0", "private_key": "34dc2f78af9b7ca0b7900f4d8ffa8a0865c75469f39bf1e92d9eb708a001807e"}, {"username": "admin", "password": "jerma985", "public_key": "39ae1677d39e910797c8bd8856dc863dd719f0555d98fcd64d15130a87fcb5de", "private_key": "5429ea8d2ad67e97a5ace9c4782a536311ac735d0c5c0be11b63c512ec652e48"}, {"username": "6767676767", "password": "7676767676", "public_key": "ec827549914a097b0ac569150ee5018fcfeb1183eef3988738d61d013e9b9c35", "private_key": "56b177108d9af944511582a12f9ba05e37b65212382fab9a196f0a93ba86aefe"}, {"username": "jason_test", "password": "12345678", "public_key": "85dca56a9ebc60637c4cd58cd9a14dc222fe87502d36d8e6cda5e659b7c9de4e", "private_key": "0bb334c2430be2c5961dbd8a47c035f9a17992101eee223ed8538c54f9a51fc2"}, {"username": "test2", "password": "12345678", "public_key": "6115a12430e7a6234f5ec42a5bd497e85fd113709f0d9a5c4fb5d3c1159dba9a", "private_key": "a75eed5b6e442ac5752e5bc6d388e4caf2fdaa65c150ebad99f1fc8b6ef7966d"}, {"username": "test3", "password": "12345678", "public_key": "e2f51bdd9661133627b492e1e13601895dc1a231f885103aeb6bae8a9712b90c", "private_key": "0e7af4862b66327c7bdbcdff83aef229c46379a45658d4ac3a630da60e10e8eb"}, {"username": "test4", "password": "12345678", "public_key": "969af4c4179ff4d8dbe69152f6f6aed5af6883ab73b6f7ba638124d5377157f8", "private_key": "e5b6dae8e0cc636411f69baf76f1f24968403dfd657973cf0f97c102f3fa1428"}, {"username": "test6", "password": "12345678", "public_key": "5e16a7c3f13840fcc89ea6b62e250086f058fa50d6a9badb2e8907942b3d03c8", "private_key": "c69999edc7adc200f73cce89fdad374656498fc738ede842dc3a5722eea72773"}]

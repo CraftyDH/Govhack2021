@@ -129,7 +129,7 @@ async def get_unsigned_transactions(request):
 @routes.post('/get_balance')
 async def get_balance(request):
     username = (await request.post())["username"]
-    user_worth = b.get_user_worth(username)
+    user_worth = users.get_user_worth(username)
     if (user_worth):
         ret_json = safe_str({
             "status": "success",
@@ -144,34 +144,42 @@ async def get_balance(request):
 @routes.get('/get_usernames')
 async def get_usernames(request):
     usernames = users.get_usernames()
+    public_keys = users.get_public_keys()
     if not usernames:
         return web.json_response({"status": "failed getting usernames"})
-    ret_json = safe_str({"status": "success", "usernames": usernames})
+    ret_json = safe_str({"status": "success", "usernames": usernames,'public_keys':public_keys})
     return web.Response(text=ret_json, content_type="application/json")
 
 @routes.get('/{username}/get_all_contracts/{pending}')
 async def get_all_contracts(request):
     username = request.match_info["username"]
+    pending = request.match_info["pending"]
+    print("pending == " + str(pending))
+    print("usernane == " + str(username))
     
     # pending
     # active
-
-    contracts = t.get_all_contracts(username, request.match_info["pending"])
+    contracts = t.get_all_contracts(username, pending)
+    print("contracts " + str(contracts))
     ret_json = [[
         ", ".join(map(lambda i: users.find_user_private_key(i)[0]["username"]), n.senders),
         ", ".join(map(lambda i: users.find_user_private_key(i)[0]["username"]), n.recipients),
         n.amount,
-        n.hash,
-        n.tax,
-        n.end_time
+        n.increment,
+        n.limit,
+        n.start_date,
+        n.end_date,
+        n.status
     ] for n in contracts]
     """columns: [
-        { title: "Sender" },
-        { title: "Recipient" },
+        { title: "Senders" },
+        { title: "Recipients" },
         { title: "Amount" },
-        { title: "Hash" },
-        { title: "Tax" },
-        { title: "Time" },
+        { title: "Increment" },
+        { title: "Limit" },
+        { title: "Start Date" },
+        { title: "End Date" },
+        { title: "Status" },
     ], """
     ret_json = safe_str({"data": ret_json})
     return web.Response(text=ret_json, content_type="application/json")
@@ -180,7 +188,6 @@ async def get_all_contracts(request):
 async def post_smart_contract(request):
     data = await request.post()
     print("data is " + str(data))
-    #params = data["parameters"]
     if not data['start_date']:
         dates = None
     else:   
@@ -192,7 +199,7 @@ async def post_smart_contract(request):
     sender_arr = json.loads(data["sender_arr"])
     recipient_arr = json.loads(data["recipient_arr"])
     print(sender_arr, recipient_arr)
-    contract =  t.create_contract(data["amount"], sender_arr, recipient_arr, int(data['limit']), dates)
+    contract = t.create_contract(data["amount"], sender_arr, recipient_arr, int(data['limit']), dates)
     ret_json = safe_str({"status": "success", "contract": contract})
     return web.Response(text=ret_json, content_type="application/json")
     

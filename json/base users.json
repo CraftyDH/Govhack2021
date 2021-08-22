@@ -1,0 +1,14 @@
+[
+    {
+        "username": "HedgeFund",
+        "password": "hedgefund",
+        "public_key": "f1c465022015749049d33419fc6bb87c0a112ce88136994a13b2a82613dcb3f0",
+        "private_key": "34dc2f78af9b7ca0b7900f4d8ffa8a0865c75469f39bf1e92d9eb708a001807e"
+    },
+    {
+        "username": "admin",
+        "password": "jerma985",
+        "public_key": "39ae1677d39e910797c8bd8856dc863dd719f0555d98fcd64d15130a87fcb5de",
+        "private_key": "5429ea8d2ad67e97a5ace9c4782a536311ac735d0c5c0be11b63c512ec652e48"
+    }
+]

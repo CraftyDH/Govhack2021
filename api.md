@@ -206,7 +206,7 @@ username: String
 POST /get_usernames
 
 ## Success
-{"status": "success", "usernames": [String, ...]}
+{"status": "success", "usernames": [String, ...], "public_keys": [Int,...]}
 ## Failure
 {"status": "failed getting usernames"}
 

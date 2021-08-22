@@ -95,74 +95,53 @@
                      return;
                  }
                  user = result.user;
-                  $('#balance').html('User: '+user.username+"<br>Balance: $0");
+                  $('#balance').html('User: '+user.username+"<br>Balance: $"+user.user_worth);
+                  var table = $('#pending').DataTable({
+                     responsive: true,
+                     "ajax": '/' + username + '/get_all_contracts/pending',
+                     columns: [
+                           { title: "Senders" },
+                           { title: "Recipients" },
+                           { title: "Amount" },
+                           { title: "Increment" },
+                           { title: "Limit" },
+                           { title: "Start Date" },
+                           { title: "End Date" },
+                           { title: "Status" },
+                        ],
+                     "language": {
+                        "zeroRecords": "Records: NULL",
+                     },
+                     "order": [[ 6, "desc" ]]
+                  });
+
+                  setInterval( function () {
+                     table.ajax.reload( null, false ); // user paging is not reset on reload
+                  }, 5000 );
+
+                  var table2 = $('#active').DataTable({
+                     responsive: true,
+                     "ajax": '/' + username + '/get_all_contracts/active',
+                     columns: [
+                        { title: "Senders" },
+                        { title: "Recipients" },
+                        { title: "Amount" },
+                        { title: "Increment" },
+                        { title: "Limit" },
+                        { title: "Start Date" },
+                        { title: "End Date" },
+                        { title: "Status" },
+                     ],
+                     "language": {
+                        "zeroRecords": "Records: NULL",
+                     },
+                     "order": [[ 6, "desc" ]]
+                  });
+
+                  setInterval( function () {
+                     table2.ajax.reload( null, false ); // user paging is not reset on reload
+                  }, 5000 );
              },
-         });
-
-         Swal.fire({
-           text: 'curl -d "username='+username+'" -x POST /get_user_transactions',
-           icon:'info',
-            showConfirmButton: false,
-          });
-
-          $.ajax({
-            type: "POST",
-            async: true,
-            url: "/get_user_transactions",
-            cache: false,
-            data: {
-               username:username
-            },
-            success: function(result){
-               var status = result.status;
-               if(status != "success"){ //error
-                  Swal.fire('ERR::get_contracts',status,'error');
-                  return;
-               }
-               Swal.close();
-
-               var table = $('#pending').DataTable({
-                  responsive: true,
-                  "ajax": '/' + username + '/get_all_contracts/pending',
-                  columns: [
-                     { title: "Sender" },
-                     { title: "Recipient" },
-                     { title: "Amount" },
-                     { title: "Hash" },
-                     { title: "Tax" },
-                     { title: "Time" },
-                     ],
-                  "language": {
-                     "zeroRecords": "Records: NULL",
-                  },
-                  "order": [[ 5, "desc" ]]
-               });
-
-               setInterval( function () {
-                  table.ajax.reload( null, false ); // user paging is not reset on reload
-               }, 5000 );
-
-               var table2 = $('#active').DataTable({
-                  responsive: true,
-                  "ajax": '/' + active + '/get_all_contracts/active',
-                  columns: [
-                     { title: "Sender" },
-                     { title: "Recipient" },
-                     { title: "Amount" },
-                     { title: "Hash" },
-                     { title: "Tax" },
-                     { title: "Time" },
-                     ],
-                  "language": {
-                     "zeroRecords": "Records: NULL",
-                  },
-                  "order": [[ 5, "desc" ]]
-               });
-
-               setInterval( function () {
-                  table2.ajax.reload( null, false ); // user paging is not reset on reload
-               }, 5000 );
-            },
          });
          
          

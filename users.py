@@ -68,7 +68,7 @@ def create_user(username: str, password: str, public_key = None):
 
     #giving money
     trans = transaction.create_transaction("5429ea8d2ad67e97a5ace9c4782a536311ac735d0c5c0be11b63c512ec652e48", public_key, 1000) #sender private key 0
-
+    print(trans)
     return {
         "status": "success",
         "user": newuser
@@ -78,9 +78,15 @@ def get_usernames():
     usernames = []
     users = load_user_json()
     for user in users:
-        if user["username"] not in usernames:
-            usernames.append(user["username"])
+        usernames.append(user["username"])
     return usernames if usernames else False
+
+def get_public_keys():
+    keys = []
+    users = load_user_json()
+    for user in users:
+        keys.append(user["public_key"])
+    return keys if keys else False
 
 def get_user_by_public_key(public_key):
     users = load_user_json()
@@ -137,6 +143,7 @@ def login(username: str, password: str):
                     "password": user["password"],
                     "public_key": user["public_key"],
                     "private_key": user["private_key"],
+                    "user_worth" : get_user_worth(user) # Will always return a float
                 }
             }
         elif user["username"] == username:
@@ -201,14 +208,15 @@ def get_user_worth_from_smart_contracts_periodic(user: dict) -> float: # This is
 def get_user_worth(user: dict) -> float:
     return round(get_user_worth_from_transactions(user) + get_user_worth_from_smart_contracts_periodic(user), 2)
 
-def get_user_transactions(user : dict):
+def get_user_transactions(user : dict) -> list:
+    relatative_transactions = []
     for block in blockchain.chain:
         for transaction in block.transactions:
             if (transaction.sender == user):
-                pass
+                relatative_transactions.append(transaction.amount * -1)
             elif (transaction.recipient == user):
-                pass
-    return [transaction.amount for block in blockchain.chain for transaction in block.transactions if (transaction.sender == user) or (transaction.recipient == user)]
+                relatative_transactions.append(transaction.amount)
+    return relatative_transactions
 
 def get_all_contracts():
     return [contract for block in blockchain.contracts_chain for contract in block.transactions]
