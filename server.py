@@ -244,4 +244,5 @@ async def sign_transaction(request):
 
 app = web.Application()
 app.add_routes(routes)
-web.run_app(app, port=80)
+
+web.run_app(app, port=os.environ.get('PORT', 8080))
