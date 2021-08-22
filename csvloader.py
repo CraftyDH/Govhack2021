@@ -57,7 +57,6 @@ with open(csv_file, newline='') as f:
         users.append(user)
     u.modify_json(users)
 
-print(b)
 
 #block_id: 4728042
 #block_hash: 0x2ab52915da4a7bece7fe897c5e9cf0d93a40f42c02e4170438975e8f6205728f

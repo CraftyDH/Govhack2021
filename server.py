@@ -154,24 +154,25 @@ async def get_usernames(request):
 async def get_all_contracts(request):
     username = request.match_info["username"]
     pending = request.match_info["pending"]
-    print("pending == " + str(pending))
-    print("usernane == " + str(username))
     
     # pending
     # active
     contracts = t.get_all_contracts(username, pending)
-    print("contracts " + str(contracts))
-    ret_json = [[
-        ", ".join(map(lambda i: users.find_user_private_key(i)[0]["username"]), n.senders),
-        ", ".join(map(lambda i: users.find_user_private_key(i)[0]["username"]), n.recipients),
-        n.amount,
-        n.increment,
-        n.limit,
-        n.start_date,
-        n.end_date,
-        n.status
-    ] for n in contracts]
+    print("contracts = " + str([n.__dict__.keys() for n in contracts]))
+    [print(n.senders) for n in contracts]
+    ret_json = [{
+        "ID": n.id,
+        "Senders": ", ".join(map(lambda i: users.find_user_private_key(i)["username"], n.senders)), 
+        "Recipients": ", ".join(map(lambda i: users.find_user_public_key(i)["username"], n.recipients)),
+        "Amount": n.amount,
+        "Increment": (n.increment if isinstance(n, t.Time_Contract) else "N/A"), #isinstance()
+        "Limit": n.limit,
+        "StartDate": (n.start_date if isinstance(n, t.Time_Contract) else "N/A"),
+        'EndDate': (n.end_date if isinstance(n, t.Time_Contract) else "N/A"),
+        'Status': n.status
+    } for n in contracts]
     """columns: [
+        {title: "id" },
         { title: "Senders" },
         { title: "Recipients" },
         { title: "Amount" },
@@ -188,7 +189,7 @@ async def get_all_contracts(request):
 async def post_smart_contract(request):
     data = await request.post()
     print("data is " + str(data))
-    if not data['start_date']:
+    if data['limit'] == 0:
         dates = None
     else:   
         dates = {
@@ -231,8 +232,23 @@ async def sign_transaction(request):
     ret_json = safe_str(t.sign_contract(data["contract_id"], data["private_key"]))
     return web.Response(text=ret_json, content_type="application/json")
 
+@routes.post('/decline_contract')
+async def decline_transaction(request):
+    data = await request.post()    
+    ret_json = safe_str(t.decline_contract(data["contract_id"], data["private_key"]))
+    return web.Response(text=ret_json, content_type="application/json")
 
 app = web.Application()
 app.add_routes(routes)
 
 web.run_app(app, port=os.environ.get('PORT', 8080))
+
+# import dashboard
+
+from itertools import groupby
+
+@routes.post('/get_group_data')
+async def get_group_data(request):
+    with open(csv_file, newline='') as f:
+        read = csv.reader(f)
+        

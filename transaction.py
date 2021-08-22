@@ -9,7 +9,7 @@ class Transaction:
 	def __init__(self, sender, recipient, amount, hash=0): #user dictionary
 		self.sender = users.find_user_private_key(sender)
 		self.recipient = users.find_user_public_key(recipient)
-		self.amount = int(amount)
+		self.amount = float(amount)
 		self.time = time.asctime()
 		if hash == 0:
 			# self.recipient.encode() is encoding ID instead of public key 
@@ -26,8 +26,7 @@ class Transaction:
 		pass
 
 	def validate_transaction(self):
-		if self.sender['private_key'] == "5429ea8d2ad67e97a5ace9c4782a536311ac735d0c5c0be11b63c512ec652e48": return {"status" : "success"}
-		print("called validate")
+		#print("called validate")
 		net_worth = users.get_user_worth(self.sender) #this here
 		if net_worth - self.amount < 0: 
 			return {"status" : "Insufficient Funds"}
@@ -48,43 +47,53 @@ def create_transaction(sender, recipient, amount):
 	else:
 		return tmp
 
+def create_transaction_no_validation(sender, recipient, amount): 
+	t = Transaction(sender, recipient, amount)
+	blockchain.add_transaction(t)
+	return t
+
+
 def create_contract(amount: int, sender_private_key : int, recipient_public_key : int, limit : int, dates): # Add an Amount
 	if limit == 0:
-		return Time_Contract(dates["start_date"], amount, sender_private_key, recipient_public_key, dates)
-	elif recipient_public_key:
-		user = users.find_user_private_key(sender_private_key)
-		CONST_HEDGEFUND.smart_invest(user, amount, limit) # Since its running infinitley, 
+		tmp = Time_Contract(dates["start_date"], amount, sender_private_key, recipient_public_key, dates)
+		blockchain.unsigned_contracts.append(tmp)
+		return tmp
+	else:
+		user = users.find_user_private_key(list(sender_private_key.keys())[0]) #HERE
+		tmp = CONST_HEDGEFUND.smart_invest(user, amount, limit) # Since its running infinitley, 
+		blockchain.unsigned_contracts.append(tmp)
+		return tmp
 
 def get_all_contracts(username, pending):
 	# status types: "pending", "active", "fulfilled", "declined"
 	#contracts should be on blockchain and hedgefund
+	user = users.get_user_by_username(username)
 	contracts = []
-	if username in CONST_HEDGEFUND.invested_users:
-		contracts.append(CONST_HEDGEFUND)
+	# if username in CONST_HEDGEFUND.invested_users:
+	# 	contracts.append(CONST_HEDGEFUND)
 	if pending == "active":
 		for block in blockchain.contracts_chain:
 			for contract in block.transactions:
 				if contract.status != "active": continue
-				elif username in contract.senders: contracts.append(contract)
-				elif username in contracts.recipients: contracts.append(contract)
+				elif user["private_key"] in contract.senders: contracts.append(contract)
+				elif user["public_key"] in contract.recipients: contracts.append(contract)
 	elif pending == "pending":
-		for block in blockchain.unsigned_contracts + blockchain.unconfirmed_contracts:
-			for contract in block.transactions:
-				if username in contract.senders: contracts.append(contract)
-				elif username in contracts.recipients: contracts.append(contract)
+		for contract in blockchain.unsigned_contracts + blockchain.unconfirmed_contracts:
+			if user["private_key"] in contract.senders: contracts.append(contract)
+			elif user["public_key"] in contract.recipients: contracts.append(contract)
 	elif pending == "fulfilled":
 		for block in blockchain.contracts_chain:
 			for contract in block.transactions:
 				if contract.status != "fulfilled": continue
-				elif username in contract.senders: contracts.append(contract)
-				elif username in contracts.recipients: contracts.append(contract)
+				elif user["private_key"] in contract.senders: contracts.append(contract)
+				elif user["public_key"] in contract.recipients: contracts.append(contract)
 	elif pending == "declined":
 		raise Exception("ERROR TRYING TO FIND DECLINED TRANSACTIONS NOT IMPLEMENTED")
 	else:
 		raise Exception("pending not found with " + str(pending))
-	return contracts
+	return list(set(contracts))
 
-
+ID_COUNT = 0
 class Smart_Contract:
 	# did format -> { publickey : amount_contributed }
 	# senders -> {"node1":25, "node2":30}
@@ -95,11 +104,16 @@ class Smart_Contract:
 		self.date = date 
 		self.senders = senders #senders parameter is just id
 		self.recipients = recipients #recipients parameter is just id
+		self.limit = [v for k,v in recipients.items()][0]
+		if isinstance(self, Time_Contract): self.limit = "N/A"
 		self.amount = 0
-		self.amTime_Contractount= 0
+		self.amTime_Contractount = 0
+		global ID_COUNT
+		self.id = ID_COUNT
+		ID_COUNT+=1
 		# {'4884b436627b0c6168163032f28395386ca42163e0dfb2ff25c438b42c33cb41': '012344'}
 		for v in self.senders.values(): #? what is senders
-			print(v)
+			#print(v)
 			self.amTime_Contractount += int(v) 
 		self.validate()
 		self.status = "pending"
@@ -126,13 +140,13 @@ class Smart_Contract:
 		#find user object
 		n_users = users.load_user_json()
 		self.senderArr = []
-		for private_key in self.senders.keys():
+		for private_key in self.senders.keys(): 
 			for user in n_users:
 				if user["private_key"] == private_key:
 					self.senderArr.append(user)
 					break
-			else:
-				raise Exception("sender not found")
+		if len(self.senderArr) == 0: #!= len(self.senders.keys())
+			raise Exception("sender not found")
 		
 		self.recipientArr = []
 		for public_key in self.recipients.keys():
@@ -159,6 +173,8 @@ class Smart_Contract:
 
 	def decline_contract(self):
 		self.status = "declined"
+		blockchain.unsigned_contracts.remove(self)
+		return
 		
 	def sign_request(self):
 		blockchain.add_SC(self) 
@@ -180,11 +196,16 @@ class Smart_Contract:
 		return {"status":"Constract Completely Signed, Processing now!"}
 
 
+        # n.start_date,
+        # n.end_date,
 class Time_Contract(Smart_Contract):
 	def __init__(self, date, amount, senders, recipients, dates : dict):
 		super().__init__(date, senders, recipients)		
 		self.transaction_timestamps = Time_Contract.create_transaction_dates(dates)
 		self.amount = amount
+		self.start_date = dates['start_date']
+		self.increment = int(dates['increment'])
+		self.end_date = dates['end_date']
 
 	@staticmethod
 	def create_transaction_dates(dates) -> list:
@@ -231,7 +252,7 @@ class HedgeFund:
 			mutex.acquire()
 			for user in self.invested_users.keys():
 				added_money = random.randrange(50)
-				self.invested_users[user][0] += added_money
+				self.invested_users[user][0] += int(added_money)
 				self.wallet += added_money
 				self.check_threshold_exceeded(user)
 			mutex.release()
@@ -246,27 +267,63 @@ class HedgeFund:
 	def smart_invest(self, user, investment, limit) -> Smart_Contract:
 		mutex.acquire()
 		if (user["public_key"] in self.invested_users):
-			self.invested_users[user["public_key"]][0] += investment # If the user already exists in the invested users, we assume they want to invest more money into the hedge fund
+			self.invested_users[user["public_key"]][0] += int(investment) # If the user already exists in the invested users, we assume they want to invest more money into the hedge fund
 		else:
-			self.invested_users[user["public_key"]] = [investment, limit] # If they don't exist, then we assume they are a new investor and add them to the dict
+			self.invested_users[user["public_key"]] = [int(investment), limit] # If they don't exist, then we assume they are a new investor and add them to the dict
 		mutex.release()
-		
-		return Smart_Contract(time.asctime(),{self.details["public_key"]: limit}, {user["public_key"]: limit})
+		return Smart_Contract(time.asctime(), {self.details["private_key"]: limit}, {user["public_key"]: limit})
+
+	# def get_limit(self, public_key):
+	# 	n = self.invested_users[public_key]
+	# 	return n[1]
 		
 CONST_HEDGEFUND_SLEEP_TIME = 5 # seconds
 CONST_HEDGEFUND = HedgeFund()
 
-class Bank(HedgeFund):
-	def __init__(self):
-		super().__init__() # Define stuff in like comments
-		self.intrest = 1.25
-	def _increment_user_investment(self):
-		while True: 
-			time.sleep(CONST_HEDGEFUND_SLEEP_TIME)
-			mutex.acquire()
-			for user in self.invested_users.keys():
-				added_money = self.intrest * self.invested_users[user][0]
-				self.invested_users[user][0] += added_money
-				self.wallet += added_money
-			mutex.release()
+# class Bank(HedgeFund):
+# 	def __init__(self):
+# 		super().__init__() # Define stuff in like comments
+# 		self.intrest = 1.25
+# 		# self.invested = { 
+# 		# 		"public_key" : [invested_amount, init_investment_amount, [start_date, end_date] => []]
+# 		# }
+
+# 	def _increment_user_investment(self):
+# 		while True: 
+# 			time.sleep(CONST_HEDGEFUND_SLEEP_TIME)
+# 			mutex.acquire()
+# 			for user in self.invested_users.keys():
+# 				added_money = self.intrest * self.invested_users[user][0]
+# 				self.invested_users[user][0] += added_money
+# 				self.wallet += added_money
+# 				# total_amount / interval
+# 			mutex.release() 
+
+# 	def smart_invest(self, user, investment, dates : dict) -> Smart_Contract:
+# 		mutex.acquire()
+# 		if (user["public_key"] in self.invested_users):
+# 			self.invested_users[user["public_key"]][0] += investment # If the user already exists in the invested users, we assume they want to invest more money into the hedge fund
+# 		else:
+# 			self.invested_users[user["public_key"]] = [investment, investment, [dates["start_date"], int(dates["interval"]), dates["end_date"]]] # If they don't exist, then we assume they are a new investor and add them to the dict
+# 		mutex.release()
 		
+# 		return Time_Contract(time.asctime(),{self.details["public_key"]: limit}, {user["public_key"]: limit})
+
+
+#data["contract_id"], data["private_key"]
+def sign_transaction(id, private_key): #param
+	for x in blockchain.get_unsigned_transactions():
+		if x.id == id:
+			x.sign(private_key)
+			break
+	else:
+		return {"status": "failed signing contract"}
+	return {"status": "success"}
+def decline_transaction(id, private_key): #param
+	for x in blockchain.get_unsigned_transactions():
+		if x.id == id:
+			x.decline(private_key)
+			break
+	else:
+		return {"status": "failed declining contract"}
+	return {"status": "success"}

@@ -133,7 +133,7 @@ class Blockchain:
 		return self.contracts_chain.index_into(index)
 
 	def proof_of_work(self, block):
-		print("POW initiated\nTarget: "+'0'*self.difficulty+"\n")
+		# print("POW initiated\nTarget: "+'0'*self.difficulty+"\n")
 		# Hash at nonce 0
 		compute_hash = block.compute_hash()
 		# Hash nonce from 1...n (where n is amount of hashes to get target hash)
@@ -172,7 +172,7 @@ class Blockchain:
 		return (block_hash.startswith('0' * self.difficulty) and block_hash == block.compute_hash())
 
 	def mine_transactions(self):
-		print("mine transactions called")
+		#print("mine transactions called")
 		if self.unconfirmed_transactions == []: 
 			return {"status":"No transactions to mine"}
 		last_block = self.last_block
@@ -220,3 +220,4 @@ blockchain = Blockchain() #! POTENTIAL ERROR WITH EMPTY FILE. CHECK LATer
 # def load_chain():
 #  	json_in = json.loads(open(BLOCK_JSON_FILE, "r").read())
 #  	return Blockchain.load_json(json_in)
+

@@ -262,13 +262,18 @@ HTTP_FORM Params
 private_key: String/Int (hex key)
 contract_id: Int
 
-
-## Success
-{
-  "status": "success"
-}
-
 ## Success
 {"status": "success"}
 ## Failure
 {"status": "failed signing contract"}
+
+## Decline Contract
+POST /decline_contract
+HTTP_FORM Params
+private_key: String/Int (hex key)
+contract_id: Int
+
+## Success
+{"status": "success"}
+## Failure
+{"status": "failed declining contract"}

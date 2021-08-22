@@ -21,8 +21,11 @@
       <!-- NOTICE: You can use the _analytics.html partial to include production code specific code & trackers -->
       <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.0/dist/js.cookie.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-      <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/dt-1.10.25/datatables.min.css"/>
-      <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.10.25/datatables.min.js"></script>
+      <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs5/jszip-2.5.0/dt-1.10.25/af-2.3.7/b-1.7.1/b-colvis-1.7.1/b-html5-1.7.1/b-print-1.7.1/cr-1.5.4/date-1.1.1/fc-3.3.3/fh-3.1.9/kt-2.6.2/r-2.2.9/rg-1.1.3/rr-1.2.8/sc-2.0.4/sb-1.1.0/sp-1.3.0/sl-1.3.3/datatables.min.css"/>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+      <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/jszip-2.5.0/dt-1.10.25/af-2.3.7/b-1.7.1/b-colvis-1.7.1/b-html5-1.7.1/b-print-1.7.1/cr-1.5.4/date-1.1.1/fc-3.3.3/fh-3.1.9/kt-2.6.2/r-2.2.9/rg-1.1.3/rr-1.2.8/sc-2.0.4/sb-1.1.0/sp-1.3.0/sl-1.3.3/datatables.min.js"></script>
+
 
       <!-- Core -->
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
@@ -76,6 +79,13 @@
          var username = Cookies.get('username');
          var password = Cookies.get('password');
          var user;
+         var table1;
+         var table2;
+
+
+         function getRows(table){
+            return table.rows( { selected: true });
+         }
          
          if(!username || !password) logout();
          
@@ -96,19 +106,23 @@
                  }
                  user = result.user;
                   $('#balance').html('User: '+user.username+"<br>Balance: $"+user.user_worth);
-                  var table = $('#pending').DataTable({
+                  table1 = $('#pending').DataTable({
+                     deferRender: true,
                      responsive: true,
                      "ajax": '/' + username + '/get_all_contracts/pending',
                      columns: [
-                           { title: "Senders" },
-                           { title: "Recipients" },
-                           { title: "Amount" },
-                           { title: "Increment" },
-                           { title: "Limit" },
-                           { title: "Start Date" },
-                           { title: "End Date" },
-                           { title: "Status" },
-                        ],
+                           { title: "ID" , data: 'ID'},
+                           { title: "Senders" ,data: "Senders" },
+                           { title: "Recipients",data:"Recipients" },
+                           { title: "Amount",data:"Amount" },
+                           { title: "Increment",data:"Increment" },
+                           { title: "Limit" ,data:"Limit" },
+                           { title: "Start Date",data:"StartDate" },
+                           { title: "End Date",data:"EndDate" },
+                           { title: "Status",data:"Status" },
+                     ],
+                     rowId: 'ID',
+                     select: true,
                      "language": {
                         "zeroRecords": "Records: NULL",
                      },
@@ -116,13 +130,14 @@
                   });
 
                   setInterval( function () {
-                     table.ajax.reload( null, false ); // user paging is not reset on reload
+                     table1.ajax.reload(); // user paging is not reset on reload
                   }, 5000 );
 
-                  var table2 = $('#active').DataTable({
+                  table2 = $('#active').DataTable({
                      responsive: true,
                      "ajax": '/' + username + '/get_all_contracts/active',
                      columns: [
+                        { title: "ID" },
                         { title: "Senders" },
                         { title: "Recipients" },
                         { title: "Amount" },
@@ -204,6 +219,7 @@
                      html:'<kbd style="color:rgb(51,255,51)">$ ./create_smart_contract success!</kbd>',
                   }).then((result) => {
                      $('#close-transaction').click();
+                     $('#limit').val(0);
                   })
                },
                error: function(xhr, ajaxOptions, thrownError){
@@ -365,6 +381,11 @@
          <div class="card card-body shadow border-0 table-wrapper table-responsive mb-5">
             <h6>Pending Contracts</h6>
             <hr>
+            <div class="btn-toolbar mb-md-0">
+               <a class="text-decoration-none mb-3" href="javascript:void"><kbd class="hacker">$ ./sign-contract.sh</kbd></a>
+               <small style="margin-left: .5rem;margin-right: .5rem;">/</small>
+            <a class="text-decoration-none mb-3" href="javascript:void"><kbd class="hacker">$ ./decline-contract.sh</kbd></a>
+            </div>
             <table class="table table-hover" id="pending">
                
             </table>
